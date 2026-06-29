@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Cottage Garden Companion — A Backyard Garden Toolbox</title>
+<meta name="description" content="The Cottage Garden Companion — a small, growing toolbox of friendly helpers for the home gardener: work out fertiliser doses, pair plants that grow well together, and tend a cottage border with confidence." />
+<meta name="theme-color" content="#E9E3D2" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#1A1F18" media="(prefers-color-scheme: dark)" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="The Cottage Garden Companion — A Backyard Garden Toolbox" />
+<meta property="og:description" content="A small, growing toolbox of plain-spoken helpers for the home gardener — feed your beds, pair your plants, and tend a cottage border." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='14'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* paper / ink */
+    --paper:#E9E3D2;
+    --paper-2:#F1ECDD;
+    --paper-3:#FBF8F0;
+    --ink:#23301F;
+    --ink-soft:#5C6450;
+    --line:#CBC3AA;
+    --line-soft:#D9D2BC;
+
+    /* decorative accents (bars, borders, glyphs) */
+    --leaf:#4E7C4A;   /* Nitrogen */
+    --bloom:#C25D7C;  /* Phosphorus */
+    --vigour:#C28B36; /* Potassium */
+    --stem:#3E5B3C;
+
+    /* accent variants that meet contrast as TEXT on paper */
+    --leaf-text:#3C6238;
+    --bloom-text:#A6395A;
+    --vigour-text:#8A5E14;
+
+    --panel-hi:rgba(255,255,255,.65);
+    --grain-1:rgba(255,255,255,.18);
+    --grain-2:rgba(90,80,40,.05);
+    --shadow:rgba(35,48,31,.10);
+    --focus:rgba(166,57,90,.55);
+  }
+
+  html[data-theme="dark"]{
+    --paper:#171C14;
+    --paper-2:#202619;
+    --paper-3:#28301F;
+    --ink:#ECE7D6;
+    --ink-soft:#A9B49C;
+    --line:#3C4634;
+    --line-soft:#333c2c;
+
+    --leaf:#79A86F;
+    --bloom:#D98199;
+    --vigour:#D7A85C;
+    --stem:#86A878;
+
+    --leaf-text:#9CC78F;
+    --bloom-text:#EBA6BA;
+    --vigour-text:#E3BD74;
+
+    --panel-hi:rgba(255,255,255,.06);
+    --grain-1:rgba(255,255,255,.04);
+    --grain-2:rgba(0,0,0,.18);
+    --shadow:rgba(0,0,0,.45);
+    --focus:rgba(235,166,186,.55);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Hanken Grotesk",system-ui,sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    transition:background .35s ease, color .35s ease;
+    background-image:
+      radial-gradient(circle at 20% 30%, var(--grain-1), transparent 60%),
+      radial-gradient(circle at 80% 70%, var(--grain-2), transparent 55%);
+  }
+
+  .wrap{max-width:1120px;margin:0 auto;padding:clamp(20px,4vw,56px);}
+
+  /* ---------- shared cross-tool nav (mirrored in fertilizer.html / companion-planter.html) ---------- */
+  .sitenav{
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    margin-bottom:10px;font-size:.8rem;font-weight:600;letter-spacing:.01em;
+  }
+  .sitenav .brand{color:var(--ink-soft);display:inline-flex;align-items:center;gap:.4em;}
+  .sitenav a{
+    color:var(--bloom-text);text-decoration:none;
+    display:inline-flex;align-items:center;gap:.4em;
+    padding:5px 2px;border-bottom:1px solid transparent;min-height:34px;
+    transition:border-color .15s,color .15s;
+  }
+  .sitenav a:hover{border-bottom-color:var(--bloom);}
+  .sitenav a:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:2px;}
+  .sitenav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--ink);cursor:default;}
+
+  /* ---------- top utility bar ---------- */
+  .toolbar{display:flex;justify-content:flex-end;gap:10px;margin-bottom:6px;flex-wrap:wrap;}
+  .icon-btn{
+    font-family:inherit;font-size:.8rem;font-weight:600;color:var(--ink-soft);
+    background:var(--paper-2);border:1px solid var(--line);border-radius:999px;
+    padding:6px 14px;cursor:pointer;min-height:34px;display:inline-flex;align-items:center;gap:.45em;
+    transition:border-color .15s,color .15s,background .15s;
+  }
+  .icon-btn:hover{border-color:var(--bloom);color:var(--ink);}
+  .icon-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+
+  /* ---------- Hero ---------- */
+  .eyebrow{
+    font-size:.74rem;letter-spacing:.26em;text-transform:uppercase;
+    font-weight:600;color:var(--bloom-text);
+    display:flex;align-items:center;gap:.7em;
+  }
+  .eyebrow::before,.eyebrow::after{content:"";height:1px;background:var(--line);flex:0 0 28px;}
+  .eyebrow::after{flex:1;}
+
+  h1.title{
+    font-family:"Fraunces",serif;
+    font-optical-sizing:auto;
+    font-weight:500;
+    font-style:italic;
+    font-size:clamp(2.7rem,8vw,5.4rem);
+    line-height:.96;
+    letter-spacing:-.01em;
+    margin:.28em 0 .12em;
+    max-width:15ch;
+  }
+  .lede{
+    font-size:clamp(1.02rem,1.6vw,1.22rem);
+    color:var(--ink-soft);
+    max-width:52ch;
+    margin:0;
+  }
+  .lede b{color:var(--ink);font-weight:600;}
+
+  .sprig{display:block;margin:28px 0 8px;color:var(--line);}
+
+  /* ---------- Section scaffold ---------- */
+  section{margin-top:clamp(40px,6vw,72px);}
+  .sec-head{display:flex;align-items:baseline;gap:.8em;margin-bottom:22px;}
+  .sec-num{
+    font-family:"Fraunces",serif;font-style:italic;font-size:1rem;
+    color:var(--bloom-text);font-weight:600;
+  }
+  .sec-title{
+    font-family:"Fraunces",serif;font-weight:500;
+    font-size:clamp(1.5rem,3vw,2.05rem);letter-spacing:-.01em;margin:0;
+  }
+  .sec-sub{color:var(--ink-soft);font-size:.95rem;margin:.2em 0 0;}
+
+  /* ---------- Tool grid (specimen plates) ---------- */
+  .tool-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(290px,1fr));
+    gap:clamp(18px,2.5vw,30px);
+  }
+  .tool-card{
+    position:relative;display:flex;flex-direction:column;
+    background:var(--paper-3);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:clamp(22px,2.6vw,30px) clamp(20px,2.4vw,28px) clamp(20px,2.4vw,26px);
+    color:inherit;text-decoration:none;
+    box-shadow:0 1px 0 var(--panel-hi) inset, 0 18px 36px -28px var(--shadow);
+    transition:border-color .18s ease, transform .18s ease, box-shadow .18s ease, background .35s ease;
+  }
+  a.tool-card:hover{
+    border-color:var(--bloom);
+    transform:translateY(-3px);
+    box-shadow:0 1px 0 var(--panel-hi) inset, 0 26px 44px -26px var(--shadow);
+  }
+  a.tool-card:focus-visible{outline:2px solid var(--focus);outline-offset:3px;}
+
+  /* decorative mounted-plate corner brackets */
+  .tool-card .corner{position:absolute;width:16px;height:16px;border:1px solid var(--line);pointer-events:none;}
+  .tool-card .c1{top:9px;left:9px;border-right:0;border-bottom:0;}
+  .tool-card .c2{top:9px;right:9px;border-left:0;border-bottom:0;}
+  .tool-card .c3{bottom:9px;left:9px;border-right:0;border-top:0;}
+  .tool-card .c4{bottom:9px;right:9px;border-left:0;border-top:0;}
+
+  .card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .card-num{font-family:"Fraunces",serif;font-style:italic;font-weight:600;font-size:1.05rem;color:var(--bloom-text);}
+  .card-cat{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink-soft);}
+
+  .stage{
+    display:flex;align-items:flex-end;justify-content:center;
+    height:148px;margin:14px 0 16px;padding-bottom:8px;
+    border-bottom:1px dashed var(--line);
+  }
+  .stage svg{width:auto;height:130px;overflow:visible;}
+
+  .latin{font-family:"Fraunces",serif;font-style:italic;font-size:.92rem;color:var(--ink-soft);margin:0 0 2px;}
+  .card-name{font-family:"Fraunces",serif;font-weight:500;font-size:1.5rem;letter-spacing:-.01em;line-height:1.12;margin:0 0 8px;}
+  .card-desc{font-size:.92rem;color:var(--ink-soft);margin:0 0 16px;}
+  .card-desc b{color:var(--ink);font-weight:600;}
+
+  .card-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .tags{font-size:.72rem;letter-spacing:.04em;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .cta{
+    font-size:.84rem;font-weight:600;color:var(--bloom-text);
+    display:inline-flex;align-items:center;gap:.35em;white-space:nowrap;
+  }
+  .cta .arr{transition:transform .18s ease;}
+  a.tool-card:hover .cta .arr{transform:translateX(3px);}
+
+  /* "sowing soon" placeholder */
+  .tool-card.soon{
+    background:transparent;
+    border-style:dashed;
+    box-shadow:none;
+  }
+  .tool-card.soon .card-name,.tool-card.soon .latin{color:var(--ink-soft);}
+  .tool-card.soon .stage{opacity:.85;}
+  .seed-note{
+    font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
+    color:var(--vigour-text);
+  }
+
+  /* ---------- footer ---------- */
+  footer{margin-top:clamp(48px,7vw,72px);padding-top:24px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;
+    font-size:.82rem;color:var(--ink-soft);}
+  footer .sig{font-family:"Fraunces",serif;font-style:italic;color:var(--ink);}
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    a.tool-card:hover{transform:none;}
+    .cta .arr,a.tool-card:hover .cta .arr{transition:none;transform:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- shared cross-tool nav (mirrored in fertilizer.html / companion-planter.html) -->
+  <nav class="sitenav" aria-label="Cottage garden companion tools">
+    <span class="brand"><span aria-hidden="true">&#127807;</span> The Cottage Garden Companion</span>
+    <a href="fertilizer.html">The Fertilizer Plot</a>
+    <a href="companion-planter.html">The Companion Bed</a>
+  </nav>
+
+  <!-- top utility bar -->
+  <div class="toolbar" role="group" aria-label="Display options">
+    <button class="icon-btn" id="themeToggle" type="button" aria-pressed="false" title="Toggle dark mode">
+      <span id="themeIcon" aria-hidden="true">&#9790;</span><span id="themeText">Dark</span>
+    </button>
+  </div>
+
+  <!-- HERO -->
+  <header>
+    <p class="eyebrow">A Backyard Cottage-Garden Companion</p>
+    <h1 class="title">The Cottage Garden Companion</h1>
+    <p class="lede">A small, growing toolbox of plain-spoken helpers for the home gardener &#8212; <b>feed your beds</b>, <b>pair your plants</b>, and tend a cottage border with a little more confidence. Pick a tool and dig in.</p>
+    <svg class="sprig" width="200" height="16" viewBox="0 0 200 16" fill="none" aria-hidden="true">
+      <path d="M2 8 H82" stroke="currentColor"/>
+      <path d="M118 8 H198" stroke="currentColor"/>
+      <path d="M100 2 C96 6 94 8 100 8 C106 8 104 6 100 2 Z" fill="var(--bloom)" opacity=".85"/>
+      <path d="M100 14 C96 10 94 8 100 8 C106 8 104 10 100 14 Z" fill="var(--leaf)" opacity=".7"/>
+      <circle cx="100" cy="8" r="1.6" fill="var(--vigour)"/>
+    </svg>
+  </header>
+
+  <main>
+  <!-- THE COLLECTION -->
+  <section aria-labelledby="collection-title">
+    <div class="sec-head">
+      <span class="sec-num" aria-hidden="true">&#10047;</span>
+      <div>
+        <h2 class="sec-title" id="collection-title">The collection</h2>
+        <p class="sec-sub">Two tools, with more taking root.</p>
+      </div>
+    </div>
+
+    <div class="tool-grid">
+
+      <!-- 01 — The Fertilizer Plot -->
+      <a class="tool-card" href="fertilizer.html">
+        <span class="corner c1"></span><span class="corner c2"></span>
+        <span class="corner c3"></span><span class="corner c4"></span>
+        <div class="card-top">
+          <span class="card-num">01</span>
+          <span class="card-cat">Feed &amp; Dose</span>
+        </div>
+        <div class="stage" aria-hidden="true">
+          <!-- a single seedling: leaf, bloom & root, with the N–P–K accent trio -->
+          <svg viewBox="0 0 120 130" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M60 120 V46" stroke="var(--stem)" stroke-width="2.6"/>
+            <path d="M60 92 C44 88 33 75 36 62 C53 65 63 78 60 92 Z" fill="var(--leaf)" opacity=".28" stroke="var(--stem)" stroke-width="2"/>
+            <path d="M60 76 C76 71 87 58 84 45 C67 49 57 62 60 76 Z" fill="var(--leaf)" opacity=".22" stroke="var(--stem)" stroke-width="2"/>
+            <g stroke="var(--bloom)" stroke-width="2">
+              <circle cx="60" cy="34" r="8.5" fill="var(--bloom)" opacity=".22"/>
+              <path d="M60 25.5 V18 M60 42.5 V50 M51.5 34 H44 M68.5 34 H76 M54 28 L48.5 22.5 M66 28 L71.5 22.5 M54 40 L48.5 45.5 M66 40 L71.5 45.5"/>
+            </g>
+            <circle cx="60" cy="34" r="3" fill="var(--vigour)"/>
+            <path d="M60 120 C52 124 46 122 41 116 M60 120 C68 124 74 122 79 116 M60 120 V128" stroke="var(--stem)" stroke-width="1.6" opacity=".55"/>
+            <g>
+              <circle cx="40" cy="116" r="3.4" fill="var(--leaf)"/>
+              <circle cx="60" cy="116" r="3.4" fill="var(--bloom)"/>
+              <circle cx="80" cy="116" r="3.4" fill="var(--vigour)"/>
+            </g>
+          </svg>
+        </div>
+        <p class="latin">Hortus nutriens</p>
+        <h3 class="card-name">The Fertilizer Plot</h3>
+        <p class="card-desc">Turn any <b>N&#8211;P&#8211;K</b> ratio into a living, hand-drawn plant &#8212; then work out how much to feed your beds, how often, and what it costs.</p>
+        <div class="card-foot">
+          <span class="tags">N &middot; P &middot; K &middot; feed calculator</span>
+          <span class="cta">Open the plot <span class="arr" aria-hidden="true">&#8594;</span></span>
+        </div>
+      </a>
+
+      <!-- 02 — The Companion Bed -->
+      <a class="tool-card" href="companion-planter.html">
+        <span class="corner c1"></span><span class="corner c2"></span>
+        <span class="corner c3"></span><span class="corner c4"></span>
+        <div class="card-top">
+          <span class="card-num">02</span>
+          <span class="card-cat">Plan &amp; Pair</span>
+        </div>
+        <div class="stage" aria-hidden="true">
+          <!-- two companion plants leaning together, with a bee between -->
+          <svg viewBox="0 0 130 130" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M40 120 C38 96 36 78 46 60" stroke="var(--stem)" stroke-width="2.6"/>
+            <path d="M90 120 C92 96 94 78 84 60" stroke="var(--stem)" stroke-width="2.6"/>
+            <path d="M41 96 C28 92 21 82 24 71 C38 74 46 85 41 96 Z" fill="var(--leaf)" opacity=".26" stroke="var(--stem)" stroke-width="1.8"/>
+            <path d="M89 96 C102 92 109 82 106 71 C92 74 84 85 89 96 Z" fill="var(--leaf)" opacity=".26" stroke="var(--stem)" stroke-width="1.8"/>
+            <g stroke="var(--bloom)" stroke-width="1.8">
+              <circle cx="46" cy="54" r="7" fill="var(--bloom)" opacity=".22"/>
+              <path d="M46 47 V42 M46 61 V66 M39 54 H34 M53 54 H58"/>
+            </g>
+            <circle cx="46" cy="54" r="2.4" fill="var(--vigour)"/>
+            <g stroke="var(--vigour)" stroke-width="1.8">
+              <circle cx="84" cy="54" r="7" fill="var(--vigour)" opacity=".22"/>
+              <path d="M84 47 V42 M84 61 V66 M77 54 H72 M91 54 H96"/>
+            </g>
+            <circle cx="84" cy="54" r="2.4" fill="var(--bloom)"/>
+            <!-- bee -->
+            <g transform="translate(65 36)">
+              <ellipse cx="0" cy="0" rx="5.4" ry="3.6" fill="var(--vigour)" stroke="var(--stem)" stroke-width="1.4"/>
+              <path d="M-1.4 -3.2 V3.2 M1.6 -3 V3" stroke="var(--stem)" stroke-width="1.2"/>
+              <path d="M-2 -3 C-7 -8 -10 -6 -7 -2 Z M2 -3 C7 -8 10 -6 7 -2 Z" fill="var(--paper-3)" stroke="var(--stem)" stroke-width="1.2"/>
+            </g>
+            <path d="M55 31 C60 26 70 26 75 31" stroke="var(--bloom)" stroke-width="1.2" stroke-dasharray="2 3" opacity=".7"/>
+          </svg>
+        </div>
+        <p class="latin">Vicinia amica</p>
+        <h3 class="card-name">The Companion Bed</h3>
+        <p class="card-desc">See which of <b>75+ plants</b> grow well together &#8212; ranked good neighbours, why each pair works, and the few to keep well apart.</p>
+        <div class="card-foot">
+          <span class="tags">75+ plants &middot; companion guide</span>
+          <span class="cta">Open the bed <span class="arr" aria-hidden="true">&#8594;</span></span>
+        </div>
+      </a>
+
+      <!-- 03 — Sowing soon -->
+      <div class="tool-card soon" aria-label="More tools coming soon">
+        <span class="corner c1"></span><span class="corner c2"></span>
+        <span class="corner c3"></span><span class="corner c4"></span>
+        <div class="card-top">
+          <span class="card-num" aria-hidden="true">03</span>
+          <span class="card-cat">Sowing Soon</span>
+        </div>
+        <div class="stage" aria-hidden="true">
+          <!-- a seed sending up a first sprout in dashed ground -->
+          <svg viewBox="0 0 120 130" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 104 H106" stroke="var(--line)" stroke-width="1.6" stroke-dasharray="3 5"/>
+            <path d="M60 104 V72" stroke="var(--stem)" stroke-width="2.2" opacity=".8"/>
+            <path d="M60 86 C50 83 44 75 46 67 C56 70 63 78 60 86 Z" fill="var(--leaf)" opacity=".22" stroke="var(--stem)" stroke-width="1.8"/>
+            <path d="M60 80 C70 77 76 69 74 61 C64 64 57 72 60 80 Z" fill="var(--leaf)" opacity=".18" stroke="var(--stem)" stroke-width="1.8"/>
+            <ellipse cx="60" cy="112" rx="9" ry="6" fill="var(--vigour)" opacity=".22" stroke="var(--vigour)" stroke-width="1.8"/>
+          </svg>
+        </div>
+        <p class="latin">Semina futura</p>
+        <h3 class="card-name">More taking root</h3>
+        <p class="card-desc">New companions for the toolbox are being potted up &#8212; a sowing calendar, a watering guide, and more to come.</p>
+        <div class="card-foot">
+          <span class="seed-note">In the cold frame</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+  </main>
+
+  <footer>
+    <span>A friendly toolbox for the home gardener &#8212; gardening lore varies by soil, season and source, so treat each tool as a good starting point, not a rule.</span>
+    <span class="sig">&#8212; from soil to bloom</span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  function $(id){ return document.getElementById(id); }
+
+  /* Theme — mirrors fertilizer.html / companion-planter.html and uses the
+     SHARED localStorage key, so dark mode chosen in any tool carries across. */
+  function setTheme(t, persist){
+    document.documentElement.setAttribute("data-theme", t);
+    var dark = t === "dark";
+    $("themeToggle").setAttribute("aria-pressed", dark ? "true" : "false");
+    $("themeIcon").textContent = dark ? "☀" : "☾";   // ☀ / ☾
+    $("themeText").textContent = dark ? "Light" : "Dark";
+    if(persist){ try{ localStorage.setItem("fertilizerTheme", t); }catch(e){} }
+  }
+
+  $("themeToggle").addEventListener("click", function(){
+    var cur = document.documentElement.getAttribute("data-theme");
+    setTheme(cur === "dark" ? "light" : "dark", true);
+  });
+
+  var storedTheme = null; try{ storedTheme = localStorage.getItem("fertilizerTheme"); }catch(e){}
+  var initTheme = storedTheme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  setTheme(initTheme, false);
+})();
+</script>
+</body>
+</html>

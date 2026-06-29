@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Fertilizer Plot — A Cottage Garden Companion</title>
+<meta name="description" content="The Fertilizer Plot — a cottage-garden companion that turns any N–P–K fertiliser ratio into a hand-drawn plant, then measures how much to feed your beds, when, and what it will cost." />
+<meta name="theme-color" content="#E9E3D2" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#1A1F18" media="(prefers-color-scheme: dark)" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="The Fertilizer Plot — A Cottage Garden Companion" />
+<meta property="og:description" content="Turn any N–P–K fertiliser ratio into a hand-drawn plant and see how it feeds leaves, blooms and roots — then measure exactly how much your beds want." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='14'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* paper / ink */
+    --paper:#E9E3D2;
+    --paper-2:#F1ECDD;
+    --paper-3:#FBF8F0;
+    --ink:#23301F;
+    --ink-soft:#5C6450;
+    --line:#CBC3AA;
+    --line-soft:#D9D2BC;
+
+    /* decorative accents (bars, borders, glyphs) */
+    --leaf:#4E7C4A;   /* Nitrogen */
+    --bloom:#C25D7C;  /* Phosphorus */
+    --vigour:#C28B36; /* Potassium */
+    --stem:#3E5B3C;
+
+    /* accent variants that meet contrast as TEXT on paper */
+    --leaf-text:#3C6238;
+    --bloom-text:#A6395A;
+    --vigour-text:#8A5E14;
+
+    /* plant fills (read by JS so dark mode adapts) */
+    --leaf-rich:#3f6f3b;
+    --leaf-mid:#4E7C4A;
+    --leaf-pale:#6f9165;
+    --bloom-stroke:#a84867;
+
+    /* inverted "result" surface — tokenised so it can re-theme */
+    --result-bg:#23301F;
+    --result-fg:#FBF8F0;
+    --result-soft:#C7D2BC;
+    --result-muted:#AEBBA2;
+    --result-faint:#9BA890;
+    --result-rule:rgba(255,255,255,.14);
+    --result-fill:rgba(255,255,255,.06);
+    --result-n:#9BD08F; --result-p:#E89DB4; --result-k:#E5BE78;
+    --result-strong:#ffffff;
+
+    --panel-hi:rgba(255,255,255,.65);
+    --grain-1:rgba(255,255,255,.18);
+    --grain-2:rgba(90,80,40,.05);
+    --shadow:rgba(35,48,31,.10);
+    --focus:rgba(166,57,90,.55);
+  }
+
+  html[data-theme="dark"]{
+    --paper:#171C14;
+    --paper-2:#202619;
+    --paper-3:#28301F;
+    --ink:#ECE7D6;
+    --ink-soft:#A9B49C;
+    --line:#3C4634;
+    --line-soft:#333c2c;
+
+    --leaf:#79A86F;
+    --bloom:#D98199;
+    --vigour:#D7A85C;
+    --stem:#86A878;
+
+    --leaf-text:#9CC78F;
+    --bloom-text:#EBA6BA;
+    --vigour-text:#E3BD74;
+
+    --leaf-rich:#7FB173;
+    --leaf-mid:#6f9c64;
+    --leaf-pale:#5d8753;
+    --bloom-stroke:#b86981;
+
+    --result-bg:#0F140C;
+    --result-fg:#ECE7D6;
+    --result-soft:#BCC9AF;
+    --result-muted:#94A287;
+    --result-faint:#79866C;
+    --result-rule:rgba(255,255,255,.10);
+    --result-fill:rgba(255,255,255,.05);
+    --result-strong:#ffffff;
+
+    --panel-hi:rgba(255,255,255,.06);
+    --grain-1:rgba(255,255,255,.04);
+    --grain-2:rgba(0,0,0,.18);
+    --shadow:rgba(0,0,0,.45);
+    --focus:rgba(235,166,186,.55);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Hanken Grotesk",system-ui,sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    transition:background .35s ease, color .35s ease;
+    background-image:
+      radial-gradient(circle at 20% 30%, var(--grain-1), transparent 60%),
+      radial-gradient(circle at 80% 70%, var(--grain-2), transparent 55%);
+  }
+
+  .wrap{max-width:1120px;margin:0 auto;padding:clamp(20px,4vw,56px);}
+
+  /* ---------- shared cross-tool nav (mirrored in companion-planter.html) ---------- */
+  .sitenav{
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    margin-bottom:10px;font-size:.8rem;font-weight:600;letter-spacing:.01em;
+  }
+  .sitenav .brand{color:var(--ink-soft);display:inline-flex;align-items:center;gap:.4em;}
+  .sitenav a{
+    color:var(--bloom-text);text-decoration:none;
+    display:inline-flex;align-items:center;gap:.4em;
+    padding:5px 2px;border-bottom:1px solid transparent;min-height:34px;
+    transition:border-color .15s,color .15s;
+  }
+  .sitenav a:hover{border-bottom-color:var(--bloom);}
+  .sitenav a:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:2px;}
+  .sitenav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--ink);cursor:default;}
+
+  /* ---------- top utility bar ---------- */
+  .toolbar{display:flex;justify-content:flex-end;gap:10px;margin-bottom:6px;flex-wrap:wrap;}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--paper-2);}
+  .seg button{
+    font-family:inherit;font-size:.78rem;font-weight:600;letter-spacing:.02em;
+    border:0;background:transparent;color:var(--ink-soft);cursor:pointer;
+    padding:6px 13px;transition:background .15s,color .15s;min-height:34px;
+  }
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper-3);}
+  .seg button:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+  .icon-btn{
+    font-family:inherit;font-size:.8rem;font-weight:600;color:var(--ink-soft);
+    background:var(--paper-2);border:1px solid var(--line);border-radius:999px;
+    padding:6px 14px;cursor:pointer;min-height:34px;display:inline-flex;align-items:center;gap:.45em;
+    transition:border-color .15s,color .15s,background .15s;
+  }
+  .icon-btn:hover{border-color:var(--bloom);color:var(--ink);}
+  .icon-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+
+  /* ---------- Hero ---------- */
+  .eyebrow{
+    font-size:.74rem;letter-spacing:.26em;text-transform:uppercase;
+    font-weight:600;color:var(--bloom-text);
+    display:flex;align-items:center;gap:.7em;
+  }
+  .eyebrow::before,.eyebrow::after{content:"";height:1px;background:var(--line);flex:0 0 28px;}
+  .eyebrow::after{flex:1;}
+
+  h1.title{
+    font-family:"Fraunces",serif;
+    font-optical-sizing:auto;
+    font-weight:500;
+    font-style:italic;
+    font-size:clamp(2.7rem,8vw,5.4rem);
+    line-height:.96;
+    letter-spacing:-.01em;
+    margin:.28em 0 .12em;
+    max-width:14ch;
+  }
+  .lede{
+    font-size:clamp(1.02rem,1.6vw,1.22rem);
+    color:var(--ink-soft);
+    max-width:48ch;
+    margin:0;
+  }
+  .lede b{color:var(--ink);font-weight:600;}
+  .jump{margin:14px 0 0;font-size:.9rem;}
+  .jump a{color:var(--bloom-text);font-weight:600;text-decoration:underline;text-underline-offset:3px;}
+  .jump a:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:2px;}
+
+  .sprig{display:block;margin:28px 0 8px;color:var(--line);}
+
+  /* ---------- Section scaffold ---------- */
+  section{margin-top:clamp(40px,6vw,72px);}
+  .sec-head{display:flex;align-items:baseline;gap:.8em;margin-bottom:22px;}
+  .sec-num{
+    font-family:"Fraunces",serif;font-style:italic;font-size:1rem;
+    color:var(--bloom-text);font-weight:600;
+  }
+  .sec-title{
+    font-family:"Fraunces",serif;font-weight:500;
+    font-size:clamp(1.5rem,3vw,2.05rem);letter-spacing:-.01em;margin:0;
+  }
+  .sec-sub{color:var(--ink-soft);font-size:.95rem;margin:.2em 0 0;}
+
+  /* ---------- Specimen + chooser layout ---------- */
+  .studio{
+    display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);
+    gap:clamp(18px,2.5vw,34px);align-items:stretch;
+  }
+  .panel{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:3px;
+    box-shadow:0 1px 0 var(--panel-hi) inset, 0 18px 36px -28px var(--shadow);
+    padding:clamp(18px,2.4vw,28px);
+    transition:background .35s ease, border-color .35s ease;
+  }
+
+  /* specimen plate */
+  .plate{position:relative;display:flex;flex-direction:column;background:var(--paper-3);}
+  .plate .corner{position:absolute;width:18px;height:18px;border:1px solid var(--line);}
+  .plate .c1{top:10px;left:10px;border-right:0;border-bottom:0;}
+  .plate .c2{top:10px;right:10px;border-left:0;border-bottom:0;}
+  .plate .c3{bottom:10px;left:10px;border-right:0;border-top:0;}
+  .plate .c4{bottom:10px;right:10px;border-left:0;border-top:0;}
+
+  .specimen-stage{flex:1;display:flex;align-items:flex-end;justify-content:center;min-height:clamp(250px,40vw,340px);padding:14px 6px 4px;}
+  #plant{width:100%;max-width:320px;height:auto;max-height:52vh;overflow:visible;}
+  .label-tag{
+    text-align:center;border-top:1px dashed var(--line);
+    margin:6px 14px 4px;padding-top:10px;
+  }
+  .label-tag .latin{
+    font-family:"Fraunces",serif;font-style:italic;font-size:1.05rem;color:var(--ink);
+  }
+  .label-tag .reading{font-size:.86rem;color:var(--ink-soft);margin-top:3px;min-height:2.4em;}
+
+  /* nutrient legend tying plant regions to N/P/K */
+  .legend{display:flex;gap:6px;justify-content:center;margin:12px 0 2px;flex-wrap:wrap;}
+  .leg{
+    display:flex;align-items:center;gap:.5em;flex:1;min-width:96px;
+    padding:7px 10px;border:1px solid var(--line);border-radius:2px;background:var(--paper-2);
+    font-size:.74rem;transition:border-color .2s, background .2s, transform .2s;
+  }
+  .leg .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;}
+  .leg.n .dot{background:var(--leaf);} .leg.p .dot{background:var(--bloom);} .leg.k .dot{background:var(--vigour);}
+  .leg .lt{font-weight:700;color:var(--ink);}
+  .leg .lr{color:var(--ink-soft);}
+  .leg.lead{transform:translateY(-1px);box-shadow:0 0 0 1px currentColor inset;}
+  .leg.n.lead{border-color:var(--leaf);color:var(--leaf-text);}
+  .leg.p.lead{border-color:var(--bloom);color:var(--bloom-text);}
+  .leg.k.lead{border-color:var(--vigour);color:var(--vigour-text);}
+
+  .npk-chips{display:flex;gap:8px;justify-content:center;margin:12px 0 2px;flex-wrap:wrap;}
+  .chip{
+    display:flex;flex-direction:column;align-items:center;gap:1px;
+    padding:6px 13px;border-radius:2px;min-width:62px;
+    border:1px solid var(--line);background:var(--paper-2);
+  }
+  .chip .k{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;}
+  .chip .v{font-family:"Fraunces",serif;font-size:1.35rem;line-height:1;transition:transform .2s;}
+  .chip.bump .v{transform:scale(1.18);}
+  .chip.n{border-bottom:3px solid var(--leaf);}    .chip.n .k{color:var(--leaf-text);}
+  .chip.p{border-bottom:3px solid var(--bloom);}   .chip.p .k{color:var(--bloom-text);}
+  .chip.k{border-bottom:3px solid var(--vigour);}  .chip.k .k{color:var(--vigour-text);}
+
+  /* chooser */
+  .chooser h3, .calc h3{
+    font-family:"Fraunces",serif;font-weight:500;font-size:1.18rem;margin:0 0 4px;
+  }
+  .hint{color:var(--ink-soft);font-size:.85rem;margin:0 0 14px;}
+  .sub-h{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* plant-type recommender */
+  .types{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:6px;}
+  .type{
+    font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;
+    background:var(--paper-3);border:1px solid var(--line);border-radius:999px;
+    padding:7px 13px;color:var(--ink);min-height:36px;
+    transition:border-color .15s,background .15s,color .15s,transform .05s;
+  }
+  .type:hover{border-color:var(--bloom);}
+  .type:active{transform:translateY(1px);}
+  .type[aria-pressed="true"]{border-color:var(--ink);background:var(--paper-3);box-shadow:0 0 0 1px var(--ink) inset;}
+  .type:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+  .type-blurb{font-size:.84rem;color:var(--ink-soft);margin:2px 0 0;min-height:1.3em;font-style:italic;}
+
+  .preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+  .preset{
+    text-align:left;cursor:pointer;font-family:inherit;color:var(--ink);
+    background:var(--paper-3);border:1px solid var(--line);border-radius:2px;
+    padding:9px 11px;display:flex;flex-direction:column;gap:1px;
+    transition:border-color .15s, background .15s, transform .05s;
+  }
+  .preset:hover{border-color:var(--bloom);}
+  .preset:active{transform:translateY(1px);}
+  .preset:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+  .preset[aria-pressed="true"]{
+    border-color:var(--ink);background:var(--paper-3);
+    box-shadow:0 0 0 1px var(--ink) inset;
+  }
+  .preset .pn{font-weight:600;font-size:.9rem;}
+  .preset .pr{font-size:.78rem;color:var(--ink-soft);font-variant-numeric:tabular-nums;letter-spacing:.02em;}
+
+  .chooser-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+  .linkish{
+    font-size:.84rem;color:var(--bloom-text);font-weight:600;cursor:pointer;background:none;border:0;
+    font-family:inherit;text-decoration:underline;text-underline-offset:3px;
+    padding:10px 2px;min-height:40px;display:inline-flex;align-items:center;
+  }
+  .linkish:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:2px;}
+  .sliders{margin-top:14px;display:flex;flex-direction:column;gap:14px;}
+  .sliders[hidden]{display:none;}
+
+  .field label{display:flex;justify-content:space-between;align-items:baseline;font-size:.82rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:2px;}
+  .field label .val{font-family:"Fraunces",serif;font-style:italic;font-size:1.05rem;text-transform:none;letter-spacing:0;font-weight:500;}
+  .field .sub{font-size:.78rem;color:var(--ink-soft);font-weight:400;text-transform:none;letter-spacing:0;}
+  .ends{display:flex;justify-content:space-between;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin-top:-2px;}
+
+  /* slider: ≥44px touch band, slim visible groove */
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:44px;
+    background:transparent;outline:none;cursor:pointer;margin:0;
+  }
+  input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:var(--line);}
+  input[type=range]::-moz-range-track{height:3px;border-radius:2px;background:var(--line);}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;margin-top:-8.5px;
+    background:var(--paper-3);border:2px solid var(--ink);box-shadow:0 1px 4px var(--shadow);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:20px;height:20px;border-radius:50%;background:var(--paper-3);border:2px solid var(--ink);
+  }
+  input.n::-webkit-slider-thumb{border-color:var(--leaf);}
+  input.p::-webkit-slider-thumb{border-color:var(--bloom);}
+  input.k::-webkit-slider-thumb{border-color:var(--vigour);}
+  input.n::-moz-range-thumb{border-color:var(--leaf);}
+  input.p::-moz-range-thumb{border-color:var(--bloom);}
+  input.k::-moz-range-thumb{border-color:var(--vigour);}
+  input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px var(--focus);}
+  input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 4px var(--focus);}
+
+  /* ---------- Calculator ---------- */
+  .calc-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.92fr);gap:clamp(18px,2.5vw,30px);align-items:start;}
+
+  /* feed echo at top of calculator */
+  .feed-echo{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    border:1px dashed var(--line);border-radius:3px;padding:10px 12px;margin:0 0 16px;
+    background:var(--paper-3);
+  }
+  .feed-echo.flash{animation:flash .9s ease;}
+  @keyframes flash{0%{box-shadow:0 0 0 0 var(--bloom);}30%{box-shadow:0 0 0 2px var(--bloom);}100%{box-shadow:0 0 0 0 transparent;}}
+  .feed-echo .fe-label{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;}
+  .feed-echo .fe-name{font-family:"Fraunces",serif;font-style:italic;font-size:1.05rem;}
+  .feed-echo .fe-npk{margin-left:auto;display:flex;gap:5px;}
+  .feed-echo .fe-npk span{
+    font-variant-numeric:tabular-nums;font-weight:700;font-size:.82rem;
+    padding:2px 7px;border-radius:2px;border:1px solid var(--line);background:var(--paper-2);
+  }
+  .feed-echo .fe-npk .en{color:var(--leaf-text);} .feed-echo .fe-npk .ep{color:var(--bloom-text);} .feed-echo .fe-npk .ek{color:var(--vigour-text);}
+
+  .result{
+    background:var(--result-bg);color:var(--result-fg);border-radius:3px;
+    padding:clamp(20px,2.4vw,28px);
+    box-shadow:0 22px 40px -26px rgba(0,0,0,.55);
+    transition:background .35s ease;
+  }
+  .result .r-eyebrow{font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;color:var(--result-faint);font-weight:600;}
+  .result .big{
+    font-family:"Fraunces",serif;font-weight:500;font-size:clamp(2.2rem,5.6vw,3.3rem);
+    line-height:1;margin:.18em 0 .05em;font-variant-numeric:tabular-nums;
+  }
+  .result .big .u{font-size:.42em;font-style:italic;color:var(--result-soft);margin-left:.15em;}
+  .result .approx{color:var(--result-soft);font-size:.95rem;margin:0 0 16px;}
+  .result .approx b{color:var(--result-strong);font-weight:600;}
+  .warn{
+    display:none;margin:0 0 16px;padding:10px 12px;border-radius:3px;
+    background:rgba(226,150,80,.16);border:1px solid rgba(226,150,80,.5);
+    color:#F0D9B0;font-size:.84rem;line-height:1.45;
+  }
+  .warn.show{display:block;}
+  .r-line{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--result-rule);font-size:.9rem;}
+  .r-line span:first-child{color:var(--result-muted);}
+  .r-line span:last-child{font-variant-numeric:tabular-nums;font-weight:600;}
+  .r-deliver{display:flex;gap:6px;margin-top:16px;}
+  .r-deliver .d{flex:1;text-align:center;padding:8px 4px;border-radius:2px;background:var(--result-fill);}
+  .r-deliver .d .dk{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;}
+  .r-deliver .d.n .dk{color:var(--result-n);} .r-deliver .d.p .dk{color:var(--result-p);} .r-deliver .d.k .dk{color:var(--result-k);}
+  .r-deliver .d .dv{font-family:"Fraunces",serif;font-size:1.25rem;margin-top:2px;font-variant-numeric:tabular-nums;}
+  .r-note{font-size:.82rem;color:var(--result-muted);margin:16px 0 0;line-height:1.5;}
+  .r-actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;}
+  .r-actions button{
+    flex:1;min-width:120px;font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;
+    background:var(--result-fill);color:var(--result-fg);border:1px solid var(--result-rule);
+    border-radius:3px;padding:10px 12px;min-height:42px;transition:background .15s,border-color .15s;
+  }
+  .r-actions button:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.35);}
+  .r-actions button:focus-visible{outline:2px solid var(--result-p);outline-offset:2px;}
+
+  /* buy & schedule sub-panels */
+  .mini-h{font-family:"Fraunces",serif;font-weight:500;font-size:1.05rem;margin:0 0 2px;}
+  .num-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0 2px;}
+  .num-field label{display:block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--ink-soft);margin-bottom:4px;}
+  .num-field input{
+    width:100%;font-family:inherit;font-size:1rem;color:var(--ink);
+    background:var(--paper-3);border:1px solid var(--line);border-radius:3px;padding:9px 10px;min-height:42px;
+  }
+  .num-field input:focus-visible{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--bloom);}
+  .buy-out{margin-top:12px;}
+  .buy-out .r-line{border-top-color:var(--line);}
+  .buy-out .r-line span:first-child{color:var(--ink-soft);}
+  .buy-out .r-line span:last-child{color:var(--ink);}
+  .sched-list{margin:10px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px;}
+  .sched-list li{
+    font-size:.8rem;font-variant-numeric:tabular-nums;color:var(--ink);
+    border:1px solid var(--line);border-radius:2px;padding:5px 9px;background:var(--paper-3);
+  }
+  .sched-list li.first{border-color:var(--bloom);color:var(--bloom-text);font-weight:600;}
+
+  /* ---------- NPK explainer ---------- */
+  .nutrients{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .nut{
+    background:var(--paper-2);border:1px solid var(--line);border-radius:3px;
+    padding:20px 18px;position:relative;overflow:hidden;
+  }
+  .nut .bar{position:absolute;top:0;left:0;width:100%;height:4px;}
+  .nut.n .bar{background:var(--leaf);} .nut.p .bar{background:var(--bloom);} .nut.k .bar{background:var(--vigour);}
+  .nut .letter-row{display:flex;align-items:center;gap:12px;margin-bottom:1px;}
+  .nut .glyph{width:38px;height:38px;flex:0 0 auto;}
+  .nut .letter{font-family:"Fraunces",serif;font-style:italic;font-size:2.4rem;line-height:1;}
+  .nut.n .letter{color:var(--leaf-text);} .nut.p .letter{color:var(--bloom-text);} .nut.k .letter{color:var(--vigour-text);}
+  .nut .name{font-weight:700;font-size:1.02rem;margin:2px 0 1px;}
+  .nut .role{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin-bottom:10px;}
+  .nut p{font-size:.9rem;color:var(--ink-soft);margin:0 0 12px;}
+  .nut p b{color:var(--ink);}
+  .nut .use{
+    font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--ink);
+    background:var(--paper-3);border:1px solid var(--line);border-radius:999px;padding:7px 12px;min-height:36px;
+    transition:border-color .15s,background .15s;
+  }
+  .nut.n .use:hover{border-color:var(--leaf);} .nut.p .use:hover{border-color:var(--bloom);} .nut.k .use:hover{border-color:var(--vigour);}
+  .nut .use:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+
+  /* ---------- footer ---------- */
+  footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;
+    font-size:.82rem;color:var(--ink-soft);}
+  footer .sig{font-family:"Fraunces",serif;font-style:italic;color:var(--ink);}
+
+  /* visually-hidden live region */
+  .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+
+  /* toast */
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--paper-3);padding:10px 18px;border-radius:999px;
+    font-size:.86rem;font-weight:600;box-shadow:0 10px 30px -10px var(--shadow);
+    opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ---------- motion ---------- */
+  #sway{transform-origin:155px 320px;transform-box:view-box;animation:sway 7s ease-in-out infinite;}
+  @keyframes sway{0%,100%{transform:rotate(-1.1deg);}50%{transform:rotate(1.1deg);}}
+  /* grow lives on a WRAPPER group so its scale never overrides the
+     leaf/flower positioning transform (translate+rotate) on the child */
+  .grow{animation:grow .5s cubic-bezier(.2,.8,.3,1) both;transform-box:fill-box;transform-origin:center;}
+  @keyframes grow{from{opacity:0;transform:scale(.4);}to{opacity:1;transform:scale(1);}}
+
+  @media (prefers-reduced-motion:reduce){
+    #sway{animation:none;}
+    .grow{animation:none;}
+    .feed-echo.flash{animation:none;}
+    .chip.bump .v{transform:none;}
+    html{scroll-behavior:auto;}
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:860px){
+    .studio{grid-template-columns:1fr;}
+    .calc-grid{grid-template-columns:1fr;}
+  }
+  @media (max-width:620px){
+    .nutrients{grid-template-columns:1fr;}
+  }
+  @media (max-width:430px){
+    .preset-grid{grid-template-columns:1fr;}
+    .eyebrow::before{display:none;}
+    .num-row{grid-template-columns:1fr;}
+  }
+
+  /* ---------- print: a clean feeding card ---------- */
+  @media print{
+    .toolbar,.sitenav,.chooser,.types,.type-blurb,.r-actions,.jump,.sprig,.legend,.nut .use{display:none !important;}
+    body{background:#fff !important;color:#000;background-image:none;}
+    .panel,.plate{box-shadow:none;border-color:#999;}
+    .result{background:#fff !important;color:#000 !important;box-shadow:none;border:1px solid #999;}
+    .result .r-eyebrow,.result .approx,.r-line span,.r-note,.result .big .u{color:#000 !important;}
+    .r-deliver .d{background:#f0f0f0;}
+    #sway{animation:none;}
+    section{break-inside:avoid;}
+    .studio{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- shared cross-tool nav (mirrored in companion-planter.html) -->
+  <nav class="sitenav" aria-label="Cottage garden companion tools">
+    <a class="brand" href="index.html"><span aria-hidden="true">&#127807;</span> The Cottage Garden Companion</a>
+    <a href="fertilizer.html" aria-current="page">The Fertilizer Plot</a>
+    <a href="companion-planter.html">The Companion Bed</a>
+  </nav>
+
+  <!-- top utility bar -->
+  <div class="toolbar" role="group" aria-label="Display options">
+    <div class="seg" role="group" aria-label="Units">
+      <button type="button" id="unitImp" aria-pressed="true">ft · oz</button>
+      <button type="button" id="unitMet" aria-pressed="false">m · g</button>
+    </div>
+    <button class="icon-btn" id="themeToggle" type="button" aria-pressed="false" title="Toggle dark mode">
+      <span id="themeIcon" aria-hidden="true">☾</span><span id="themeText">Dark</span>
+    </button>
+  </div>
+
+  <!-- HERO -->
+  <header>
+    <p class="eyebrow">A Backyard Cottage-Garden Companion</p>
+    <h1 class="title">The Fertilizer Plot</h1>
+    <p class="lede">Every bag of feed wears three numbers. See what <b>N&#8211;P&#8211;K</b> does to a living plant as you change the blend &#8212; then work out how much your beds want, how often, and what it costs.</p>
+    <p class="jump"><a href="#learn">New to N&#8211;P&#8211;K? Read what the three numbers mean &#8595;</a></p>
+    <svg class="sprig" width="180" height="16" viewBox="0 0 180 16" fill="none" aria-hidden="true">
+      <path d="M2 8 H72" stroke="currentColor"/>
+      <path d="M108 8 H178" stroke="currentColor"/>
+      <path d="M90 2 C86 6 84 8 90 8 C96 8 94 6 90 2 Z" fill="var(--bloom)" opacity=".85"/>
+      <path d="M90 14 C86 10 84 8 90 8 C96 8 94 10 90 14 Z" fill="var(--leaf)" opacity=".7"/>
+      <circle cx="90" cy="8" r="1.6" fill="var(--vigour)"/>
+    </svg>
+  </header>
+
+  <main>
+  <!-- 01 — THE LIVING SPECIMEN -->
+  <section id="specimen">
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <div>
+        <h2 class="sec-title">A living specimen</h2>
+        <p class="sec-sub">Tell it what you&#8217;re growing, pick a feed, or mix your own. Watch the plant respond.</p>
+      </div>
+    </div>
+
+    <div class="studio">
+      <!-- plate -->
+      <div class="panel plate">
+        <span class="corner c1"></span><span class="corner c2"></span>
+        <span class="corner c3"></span><span class="corner c4"></span>
+        <div class="specimen-stage">
+          <svg id="plant" viewBox="0 0 310 430" role="img" aria-label="Illustration of a balanced 10-10-10 plant">
+            <g id="rootsLayer"></g>
+            <g id="sway"></g>
+          </svg>
+        </div>
+        <div class="legend" aria-hidden="true">
+          <div class="leg n" id="legN"><span class="dot"></span><span><span class="lt">N</span> <span class="lr">leaves</span></span></div>
+          <div class="leg p" id="legP"><span class="dot"></span><span><span class="lt">P</span> <span class="lr">blooms</span></span></div>
+          <div class="leg k" id="legK"><span class="dot"></span><span><span class="lt">K</span> <span class="lr">roots</span></span></div>
+        </div>
+        <div class="npk-chips">
+          <div class="chip n" id="chipN"><span class="k">N</span><span class="v" id="chip-n">10</span></div>
+          <div class="chip p" id="chipP"><span class="k">P</span><span class="v" id="chip-p">10</span></div>
+          <div class="chip k" id="chipK"><span class="k">K</span><span class="v" id="chip-k">10</span></div>
+        </div>
+        <div class="label-tag">
+          <div class="latin" id="blend-name">All-purpose balanced</div>
+          <div class="reading" id="blend-reading">A steady, even feed &#8212; balanced growth across leaf, root, bloom and vigour.</div>
+        </div>
+      </div>
+
+      <!-- chooser -->
+      <div class="panel chooser">
+        <h3>Choose a feed</h3>
+        <p class="hint">The three label numbers are how a bag is rated for nitrogen, phosphate and potash &#8212; the figures every feed carries.</p>
+
+        <div class="sub-h">What are you feeding?</div>
+        <div class="types" id="types" role="group" aria-label="What are you feeding"></div>
+        <p class="type-blurb" id="typeBlurb">Pick what you&#8217;re growing and we&#8217;ll suggest a feed and a feeding strength.</p>
+
+        <div class="sub-h">Common blends</div>
+        <div class="preset-grid" id="presets" role="group" aria-label="Common fertiliser blends"></div>
+
+        <div class="chooser-actions">
+          <button class="linkish" id="customToggle" type="button" aria-expanded="false" aria-controls="customSliders">Mix a custom blend &#8594;</button>
+          <button class="linkish" id="resetBtn" type="button" title="Back to a balanced 10-10-10">Reset</button>
+        </div>
+
+        <div class="sliders" id="customSliders" hidden>
+          <div class="field">
+            <label for="slN">Nitrogen <span class="val"><span id="cn">10</span>%</span></label>
+            <input type="range" class="n" id="slN" min="0" max="25" step="1" value="10" />
+          </div>
+          <div class="field">
+            <label for="slP">Phosphate <span class="val"><span id="cp">10</span>%</span></label>
+            <input type="range" class="p" id="slP" min="0" max="25" step="1" value="10" />
+          </div>
+          <div class="field">
+            <label for="slK">Potash <span class="val"><span id="ck">10</span>%</span></label>
+            <input type="range" class="k" id="slK" min="0" max="25" step="1" value="10" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 — CALCULATOR -->
+  <section id="calculator">
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <div>
+        <h2 class="sec-title">Measure for your beds</h2>
+        <p class="sec-sub">Using the feed you chose above. Set your plot and how generously you&#8217;re feeding.</p>
+      </div>
+    </div>
+
+    <div class="feed-echo" id="feedEcho">
+      <span class="fe-label">Your feed</span>
+      <span class="fe-name" id="feName">All-purpose balanced</span>
+      <span class="fe-npk"><span class="en" id="feN">10</span><span class="ep" id="feP">10</span><span class="ek" id="feK">10</span></span>
+    </div>
+
+    <div class="calc-grid">
+      <div class="panel calc">
+        <h3>Your plot</h3>
+        <p class="hint">Roughly the patch you&#8217;re feeding &#8212; a border, a raised bed, a corner.</p>
+        <div class="sliders" style="margin-top:4px">
+          <div class="field">
+            <label for="len">Bed length <span class="val"><span id="lenV">10</span> <span id="lenU">ft</span></span></label>
+            <input type="range" id="len" min="2" max="40" step="1" value="10" />
+          </div>
+          <div class="field">
+            <label for="wid">Bed width <span class="val"><span id="widV">6</span> <span id="widU">ft</span></span></label>
+            <input type="range" id="wid" min="2" max="25" step="1" value="6" />
+          </div>
+          <div class="field">
+            <label for="str">Feeding strength <span class="val" id="strLabel">Standard</span></label>
+            <input type="range" id="str" min="0.25" max="1" step="0.05" value="0.5" />
+            <div class="ends"><span>Light</span><span>Heavy</span></div>
+            <span class="sub" id="strSub">A measured feed for established cottage-garden plants.</span>
+          </div>
+        </div>
+        <div class="r-line" style="border-top:1px solid var(--line);margin-top:6px;color:var(--ink)">
+          <span style="color:var(--ink-soft)">Area to feed</span>
+          <span id="areaOut" style="font-family:'Fraunces',serif;font-style:italic;font-size:1.15rem">60 sq ft</span>
+        </div>
+
+        <h3 style="margin-top:24px">What it costs</h3>
+        <p class="hint">Optional &#8212; enter your bag to see cost per feeding and bags per season.</p>
+        <div class="num-row">
+          <div class="num-field">
+            <label for="bagSize">Bag size (<span id="bagU">lb</span>)</label>
+            <input type="number" id="bagSize" min="0" step="0.5" value="4" inputmode="decimal" />
+          </div>
+          <div class="num-field">
+            <label for="bagPrice">Bag price</label>
+            <input type="number" id="bagPrice" min="0" step="0.5" value="" placeholder="e.g. 12" inputmode="decimal" />
+          </div>
+        </div>
+        <div class="buy-out" id="buyOut"></div>
+      </div>
+
+      <div class="result">
+        <p class="r-eyebrow">Per feeding, scatter and water in</p>
+        <div class="big"><span id="gramsOut">4.8</span><span class="u" id="bigUnit">oz</span></div>
+        <p class="approx">about <b id="cupsOut">0.6 cups</b> &#8212; roughly <b id="handOut">2 handfuls</b><span id="metricAlt"></span></p>
+
+        <div class="warn" id="warnBox"></div>
+
+        <div class="r-line"><span>Of your <span id="resBlendName">10&#8211;10&#8211;10</span></span><span id="ozOut">136 g</span></div>
+        <div class="r-line"><span>How often to feed</span><span id="freqOut">every 3&#8211;4 weeks</span></div>
+
+        <div class="r-deliver">
+          <div class="d n"><div class="dk">N delivered</div><div class="dv" id="dN">14 g</div></div>
+          <div class="d p"><div class="dk">P&#8322;O&#8325; delivered</div><div class="dv" id="dP">14 g</div></div>
+          <div class="d k"><div class="dk">K&#8322;O delivered</div><div class="dv" id="dK">14 g</div></div>
+        </div>
+        <p class="r-note" id="resNote">Rates follow the standard 0.5&#8201;lb of nitrogen per 1,000&#8201;sq&#8201;ft. Always check your product&#8217;s bag, as concentrations vary.</p>
+
+        <div class="r-actions">
+          <button type="button" id="copyBtn">&#128279; Copy link</button>
+          <button type="button" id="icsBtn">&#128197; Add schedule</button>
+          <button type="button" id="printBtn">&#128424; Print card</button>
+        </div>
+
+        <ul class="sched-list" id="schedList" aria-label="Suggested feeding dates"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 — NPK EXPLAINER -->
+  <section id="learn">
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <div>
+        <h2 class="sec-title">What the three numbers mean</h2>
+        <p class="sec-sub">Every fertilizer is a recipe of these three. Knowing the job of each is the whole trick.</p>
+      </div>
+    </div>
+    <div class="nutrients">
+      <div class="nut n">
+        <span class="bar"></span>
+        <div class="letter-row">
+          <div class="letter">N</div>
+          <svg class="glyph" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <path d="M20 36 V14" stroke="var(--leaf)" stroke-width="2"/>
+            <path d="M20 22 C8 22 6 8 6 8 C6 8 20 8 20 22 Z" fill="var(--leaf)" opacity=".85"/>
+            <path d="M20 28 C32 28 34 16 34 16 C34 16 20 16 20 28 Z" fill="var(--leaf)" opacity=".6"/>
+          </svg>
+        </div>
+        <div class="name">Nitrogen</div>
+        <div class="role">Leaf &amp; stem</div>
+        <p>Drives lush, green growth. Reach for it early in the season to fill out <b>hedges, foliage and leafy crops</b>. Too much, though, and you&#8217;ll get leaves at the expense of flowers.</p>
+        <button class="use" type="button" data-preset="Leafy greens &amp; lawns">Use a leaf-forward feed &#8594;</button>
+      </div>
+      <div class="nut p">
+        <span class="bar"></span>
+        <div class="letter-row">
+          <div class="letter">P</div>
+          <svg class="glyph" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <g fill="var(--bloom)">
+              <ellipse cx="20" cy="12" rx="4.5" ry="7"/>
+              <ellipse cx="28" cy="18" rx="4.5" ry="7" transform="rotate(72 28 18)"/>
+              <ellipse cx="25" cy="27" rx="4.5" ry="7" transform="rotate(144 25 27)"/>
+              <ellipse cx="15" cy="27" rx="4.5" ry="7" transform="rotate(216 15 27)"/>
+              <ellipse cx="12" cy="18" rx="4.5" ry="7" transform="rotate(288 12 18)"/>
+            </g>
+            <circle cx="20" cy="20" r="3.4" fill="var(--vigour)"/>
+          </svg>
+        </div>
+        <div class="name">Phosphorus</div>
+        <div class="role">Root &amp; establishment</div>
+        <p>Supports strong root development and the energy transfer behind <b>flowering and fruiting</b>. Most welcome at planting time &#8212; many soils already hold plenty, so a soil test is wise before piling it on.</p>
+        <button class="use" type="button" data-preset="Rose &amp; flower">Use a bloom-forward feed &#8594;</button>
+      </div>
+      <div class="nut k">
+        <span class="bar"></span>
+        <div class="letter-row">
+          <div class="letter">K</div>
+          <svg class="glyph" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <path d="M20 4 L33 10 V20 C33 30 27 35 20 37 C13 35 7 30 7 20 V10 Z" fill="var(--vigour)" opacity=".85"/>
+            <path d="M20 12 V28 M14 20 H26" stroke="var(--paper-2)" stroke-width="2.4"/>
+          </svg>
+        </div>
+        <div class="name">Potassium</div>
+        <div class="role">Vigour &amp; resilience</div>
+        <p>The all-rounder. Strengthens stems, helps plants <b>cope with drought and weather</b>, and improves disease resistance and the quality of fruit.</p>
+        <button class="use" type="button" data-preset="Bulbs &amp; roots">Use a vigour-forward feed &#8594;</button>
+      </div>
+    </div>
+  </section>
+  </main>
+
+  <footer>
+    <span>A general guide for ordinary beds and borders &#8212; not a substitute for your product&#8217;s label or a soil test.</span>
+    <span class="sig">&#8212; tend gently, feed lightly</span>
+  </footer>
+
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="vh" id="liveRegion" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ----- fertilizer presets ----- */
+  var PRESETS = [
+    {name:"All-purpose balanced", short:"10–10–10", n:10, p:10, k:10},
+    {name:"Leafy greens & lawns", short:"20–5–10", n:20, p:5,  k:10},
+    {name:"Tomato & vegetable",   short:"5–10–10", n:5,  p:10, k:10},
+    {name:"Rose & flower",        short:"4–6–4",   n:4,  p:6,  k:4},
+    {name:"Bulbs & roots",        short:"3–5–7",   n:3,  p:5,  k:7},
+    {name:"Gentle all-organic",   short:"2–2–2",   n:2,  p:2,  k:2}
+  ];
+
+  /* ----- plant-type recommender ----- */
+  var PLANTS = [
+    {label:"Tomatoes & veg", preset:"Tomato & vegetable",  str:0.7, blurb:"Hungry fruiters — a balanced feed leaning to root and fruit, fed generously."},
+    {label:"Roses & flowers", preset:"Rose & flower",       str:0.6, blurb:"Bloomers like steady phosphorus and potassium for flower and stem."},
+    {label:"Lawn & leafy",    preset:"Leafy greens & lawns", str:0.6, blurb:"Nitrogen-forward for green, leafy flush — best earlier in the season."},
+    {label:"Bulbs & roots",   preset:"Bulbs & roots",        str:0.5, blurb:"Potash and phosphate for strong roots and next year's bulbs."},
+    {label:"Shrubs & hedges", preset:"All-purpose balanced", str:0.5, blurb:"An even, measured feed suits most established woody plants."},
+    {label:"Seedlings",       preset:"Gentle all-organic",   str:0.3, blurb:"Tender young growth wants a gentle, dilute top-up — never a heavy feed."}
+  ];
+
+  var DEFAULTS = {n:10, p:10, k:10, name:"All-purpose balanced", custom:false,
+                  len:10, wid:6, str:0.5, units:"imp", bag:4, price:null};
+  var state = Object.assign({}, DEFAULTS);
+
+  var $ = function(id){ return document.getElementById(id); };
+  var mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var prefersReduced = mq.matches;
+  if(mq.addEventListener){ mq.addEventListener("change", function(e){ prefersReduced = e.matches; }); }
+
+  /* read themable plant colors from CSS (re-read on theme change) */
+  var COL = {};
+  function readColors(){
+    var cs = getComputedStyle(document.documentElement);
+    function g(v){ return cs.getPropertyValue(v).trim(); }
+    COL = {
+      rich:g("--leaf-rich"), mid:g("--leaf-mid"), pale:g("--leaf-pale"),
+      bloomStroke:g("--bloom-stroke")
+    };
+  }
+
+  /* ================= PLANT DRAWING ================= */
+  function jit(i, span){
+    var x = Math.sin((i+1)*12.9898) * 43758.5453;
+    return ((x - Math.floor(x)) - 0.5) * span;
+  }
+  function svgEl(tag, attrs){
+    var e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for(var k in attrs){ e.setAttribute(k, attrs[k]); }
+    return e;
+  }
+
+  var baseX = 155, groundY = 320;
+
+  function drawPlant(n, p, k, animate){
+    // keep #sway / #rootsLayer node identity so the sway animation never restarts
+    var roots = $("rootsLayer"), sway = $("sway");
+    while(roots.firstChild){ roots.removeChild(roots.firstChild); }
+    while(sway.firstChild){ sway.removeChild(sway.firstChild); }
+
+    var total = n + p + k;
+    if(total <= 0){ total = 1; }
+    var sN = n/total, sP = p/total, sK = k/total;
+    var strength = Math.max(0.45, Math.min(1, total/36));
+
+    // ground line + soil hatch
+    roots.appendChild(svgEl("path", {
+      d:"M30 320 Q155 314 280 320", stroke:"var(--line)", "stroke-width":"1.4", fill:"none"
+    }));
+    for(var h=0; h<7; h++){
+      var hx = 60 + h*30 + jit(h,8);
+      roots.appendChild(svgEl("path",{
+        d:"M"+hx+" 326 l6 6", stroke:"var(--line)","stroke-width":"1",fill:"none","opacity":"0.7"
+      }));
+    }
+
+    // ROOTS (Potassium = depth & spread)
+    var rootDepth = 26 + sK*78 * strength;
+    var rootCount = 3 + Math.round(sK*4);
+    for(var r=0; r<rootCount; r++){
+      var spread = (r-(rootCount-1)/2) * (10 + sK*12);
+      var endX = baseX + spread + jit(r+50,8);
+      var endY = groundY + rootDepth*(0.7 + 0.3*Math.abs(jit(r+70,1)));
+      var midX = baseX + spread*0.5;
+      roots.appendChild(svgEl("path",{
+        d:"M"+baseX+" "+groundY+" Q"+midX+" "+(groundY+rootDepth*0.5)+" "+endX+" "+endY,
+        stroke:"var(--vigour)","stroke-width":(1 + sK*1.6).toFixed(2),
+        fill:"none","stroke-linecap":"round","opacity":"0.55"
+      }));
+    }
+
+    // STEM (Potassium = thickness, total = height)
+    var stemH = 150 + strength*90 + sN*30;
+    var topY = groundY - stemH;
+    var stemW = (3.2 + sK*7*strength).toFixed(2);
+    var c1x = baseX+10, c2x = baseX+16;
+    var c1y = groundY-stemH*0.4, c2y = groundY-stemH*0.7;
+    var stemPath = "M"+baseX+" "+groundY+" C"+c1x+" "+c1y+" "+c2x+" "+c2y+" "+baseX+" "+topY;
+    sway.appendChild(svgEl("path",{
+      d:stemPath, stroke:"var(--stem)", "stroke-width":stemW, fill:"none", "stroke-linecap":"round"
+    }));
+
+    // sample the ACTUAL cubic Bezier so leaves/flowers sit on the stem
+    function stemPoint(t){
+      var u = 1-t;
+      var x = u*u*u*baseX + 3*u*u*t*c1x + 3*u*t*t*c2x + t*t*t*baseX;
+      var y = u*u*u*groundY + 3*u*u*t*c1y + 3*u*t*t*c2y + t*t*t*topY;
+      return {x:x, y:y};
+    }
+
+    // LEAVES (Nitrogen = count, size, greenness)
+    var leafCount = 2 + Math.round(sN*8);
+    leafCount = Math.max(2, Math.min(9, leafCount));
+    var leafGreen = sN > 0.45 ? COL.rich : (sN > 0.28 ? COL.mid : COL.pale);
+    var leafSize = (0.8 + sN*0.7) * (0.85 + strength*0.4);
+    var leafGroup = svgEl("g", {});
+    for(var l=0; l<leafCount; l++){
+      var t = 0.16 + (l/(leafCount)) * 0.72;
+      var pt = stemPoint(t);
+      var side = (l % 2 === 0) ? 1 : -1;
+      var Ls = (34*leafSize).toFixed(1);
+      var Lc = (16*leafSize).toFixed(1);
+      var ang = side>0 ? -28 : 28;
+      var rot = ang + jit(l,8);
+      var leaf = svgEl("path",{
+        d:"M0 0 Q"+(side*Ls*0.55)+" -"+Lc+" "+(side*Ls)+" 0 Q"+(side*Ls*0.55)+" "+Lc+" 0 0 Z",
+        fill:leafGreen, opacity:(0.78 + sN*0.18).toFixed(2),
+        stroke:"var(--stem)","stroke-width":"0.8",
+        transform:"translate("+pt.x+","+pt.y+") rotate("+rot+")"
+      });
+      var midrib = svgEl("path",{
+        d:"M0 0 L"+(side*Ls*0.92)+" 0",
+        stroke:"var(--stem)","stroke-width":"0.6",opacity:"0.5",
+        transform:"translate("+pt.x+","+pt.y+") rotate("+rot+")"
+      });
+      if(animate && !prefersReduced){
+        var lwrap = svgEl("g",{"class":"grow"});
+        lwrap.style.animationDelay=(l*40)+"ms";
+        lwrap.appendChild(leaf); lwrap.appendChild(midrib);
+        leafGroup.appendChild(lwrap);
+      } else {
+        leafGroup.appendChild(leaf); leafGroup.appendChild(midrib);
+      }
+    }
+    sway.appendChild(leafGroup);
+
+    // FLOWERS / BUDS (Phosphorus = count & openness)
+    var top = stemPoint(1);
+    var bloomGroup = svgEl("g", {});
+    function flower(cx, cy, scale, open, idx){
+      var g = svgEl("g",{transform:"translate("+cx+","+cy+") scale("+scale+")"});
+      if(open){
+        for(var f=0; f<5; f++){
+          var pa = (f/5)*360;
+          g.appendChild(svgEl("ellipse",{
+            cx:0, cy:-7, rx:4.4, ry:7, fill:"var(--bloom)",
+            opacity:"0.92", stroke:COL.bloomStroke,"stroke-width":"0.5",
+            transform:"rotate("+pa+")"
+          }));
+        }
+        g.appendChild(svgEl("circle",{cx:0,cy:0,r:3.2,fill:"var(--vigour)"}));
+      } else {
+        g.appendChild(svgEl("path",{d:"M0 0 C-4 -2 -4 -10 0 -12 C4 -10 4 -2 0 0 Z", fill:"var(--bloom)", opacity:"0.7", stroke:COL.bloomStroke,"stroke-width":"0.5"}));
+        g.appendChild(svgEl("path",{d:"M0 0 C-3 -1 -3 -7 0 -8 C3 -7 3 -1 0 0 Z", fill:"var(--leaf)", opacity:"0.85"}));
+      }
+      if(animate && !prefersReduced){
+        // wrap the positioned/scaled flower so grow's scale doesn't clobber its transform
+        var fwrap = svgEl("g",{"class":"grow"});
+        fwrap.style.animationDelay=(120+idx*60)+"ms";
+        fwrap.appendChild(g);
+        return fwrap;
+      }
+      return g;
+    }
+
+    var flowerCount = Math.round(sP*7);
+    var fScale = (0.95 + sP*0.9) * (0.85 + strength*0.35);
+
+    if(flowerCount <= 0){
+      bloomGroup.appendChild(flower(top.x, top.y-4, fScale, false, 0));
+    } else {
+      bloomGroup.appendChild(flower(top.x, top.y-2, fScale*1.15, sP>0.18, 0));
+      for(var b=0; b<flowerCount; b++){
+        var bt = 0.62 + (b/(flowerCount+0.5))*0.34;
+        var bp = stemPoint(bt);
+        var bside = (b%2===0)? 1 : -1;
+        var open = sP > 0.16;
+        var fx = bp.x + bside*(14+jit(b+9,6));
+        var fy = bp.y + jit(b+3,6) - 2;
+        bloomGroup.appendChild(flower(fx, fy, fScale*(0.86+Math.abs(jit(b+20,0.24))), open, b+1));
+        bloomGroup.appendChild(svgEl("path",{
+          d:"M"+bp.x+" "+bp.y+" Q"+((bp.x+fx)/2)+" "+((bp.y+fy)/2-4)+" "+fx+" "+fy,
+          stroke:"var(--stem)","stroke-width":"1",fill:"none",opacity:"0.6"
+        }));
+      }
+    }
+    sway.appendChild(bloomGroup);
+  }
+
+  /* ================= READINGS ================= */
+  function blendReading(n,p,k){
+    var total=n+p+k; if(total<=0) return "An empty blend — nothing to feed with yet.";
+    var sN=n/total, sP=p/total, sK=k/total;
+    var spread = Math.max(sN,sP,sK) - Math.min(sN,sP,sK);
+    if(spread < 0.12){
+      return "A steady, even feed — balanced growth across leaf, root, bloom and vigour.";
+    }
+    if(sN>=sP && sN>=sK){
+      return "Nitrogen-forward — expect a flush of leafy, green growth. Best earlier in the season.";
+    }
+    if(sP>=sN && sP>=sK){
+      return "Phosphate-forward — leaning toward roots and establishment, with generous bloom.";
+    }
+    return "Potash-forward — builds sturdy, weather-hardy plants and better-quality fruit.";
+  }
+  function leadNutrient(n,p,k){
+    var total=n+p+k; if(total<=0) return null;
+    var sN=n/total, sP=p/total, sK=k/total;
+    if(Math.max(sN,sP,sK)-Math.min(sN,sP,sK) < 0.12) return null; // balanced
+    if(sN>=sP && sN>=sK) return "n";
+    if(sP>=sN && sP>=sK) return "p";
+    return "k";
+  }
+
+  /* ================= CALCULATOR ================= */
+  function strengthLabel(s){
+    if(s<=0.35) return {l:"Light",   sub:"A gentle top-up for tender or slow-growing plants."};
+    if(s<=0.6)  return {l:"Standard",sub:"A measured feed for established cottage-garden plants."};
+    if(s<=0.8)  return {l:"Generous",sub:"For hungry feeders — roses, dahlias, vegetables."};
+    return {l:"Heavy", sub:"A full feed for very hungry beds. Don't overdo it."};
+  }
+
+  // pure compute — returns everything the views need
+  function compute(){
+    var n=state.n, p=state.p, k=state.k;
+    var area = state.len * state.wid;              // sq ft (len/wid stored in ft)
+    var strength = state.str;                       // lb of driver per 1000 sqft
+
+    var drivePct, driveLetter, driveTargetMul=1;
+    if(n>0){ drivePct=n; driveLetter="nitrogen"; }
+    else if(p>0){ drivePct=p; driveLetter="phosphate"; driveTargetMul=0.5; }
+    else if(k>0){ drivePct=k; driveLetter="potash"; driveTargetMul=0.6; }
+    else { drivePct=0; driveLetter="nutrient"; }
+
+    var grams=0, actualN=0;
+    if(drivePct>0){
+      var lbs = (strength*driveTargetMul) * (area/1000) / (drivePct/100);
+      grams = lbs * 453.592;
+    }
+    actualN = grams * n/100 / 453.592 / (area/1000); // lb N per 1000 sqft actually delivered
+
+    return {
+      n:n,p:p,k:k, area:area, strength:strength,
+      drivePct:drivePct, driveLetter:driveLetter,
+      grams:grams,
+      oz:grams/28.3495,
+      cups:grams/230,
+      hands:grams/57,
+      dN:grams*n/100, dP:grams*p/100, dK:grams*k/100,
+      actualN:actualN
+    };
+  }
+
+  function freqInfo(strength){
+    if(strength>=0.8) return {text:"every 5–6 weeks", weeks:5.5};
+    if(strength>=0.6) return {text:"every 3–4 weeks", weeks:3.5};
+    if(strength>=0.35) return {text:"every 2–3 weeks", weeks:2.5};
+    return {text:"every 2 weeks", weeks:2};
+  }
+
+  // unit helpers
+  function isMet(){ return state.units==="met"; }
+  function lenDisp(ft){ return isMet() ? (ft*0.3048).toFixed(1) : String(ft); }
+  function areaDisp(sqft){
+    return isMet() ? (Math.round(sqft*0.092903*10)/10)+" m²" : Math.round(sqft)+" sq ft";
+  }
+  function gramsToBag(){ return isMet() ? state.bag*1000 : state.bag*453.592; } // bag mass in grams
+
+  var lastResult = null;
+
+  function recalc(){
+    var R = compute();
+    lastResult = R;
+    var grams = R.grams;
+
+    $("areaOut").textContent = areaDisp(R.area);
+
+    // hero number matches the chosen unit system
+    var heroVal, heroUnit, secondary;
+    if(isMet()){
+      heroVal = grams<1 ? "0" : (grams>=1000 ? (grams/1000).toFixed(2) : String(Math.round(grams/5)*5));
+      heroUnit = grams>=1000 ? "kg" : "g";
+      secondary = grams<1 ? "" : " (≈ "+R.oz.toFixed(1)+" oz)";
+    } else {
+      heroVal = R.oz<0.1 ? "0" : (R.oz>=160 ? (R.oz/16).toFixed(1) : R.oz.toFixed(1));
+      heroUnit = R.oz>=160 ? "lb" : "oz";
+      secondary = grams<1 ? "" : " (≈ "+(grams>=1000?(grams/1000).toFixed(2)+" kg":Math.round(grams/5)*5+" g")+")";
+    }
+    $("gramsOut").textContent = heroVal;
+    $("bigUnit").textContent = heroUnit;
+    $("metricAlt").textContent = secondary;
+
+    // tangible approximations
+    $("cupsOut").textContent = (R.cups<0.1 ? "a pinch" : R.cups.toFixed(1)+" cups");
+    if(grams<6){
+      $("handOut").textContent = "a light sprinkle";
+    } else {
+      var hh = Math.max(1, Math.round(R.hands));
+      $("handOut").textContent = hh+(hh===1?" handful":" handfuls");
+    }
+    if(R.drivePct<=0){ $("cupsOut").textContent="—"; $("handOut").textContent="nothing yet"; }
+
+    // "of your N-P-K" line shows total product mass
+    $("ozOut").textContent = grams<1 ? "0 g" : (grams>=1000 ? (grams/1000).toFixed(2)+" kg" : Math.round(grams/5)*5+" g");
+    $("resBlendName").textContent = state.n+"–"+state.p+"–"+state.k;
+
+    // delivered (oxide forms)
+    $("dN").textContent = Math.round(R.dN) + " g";
+    $("dP").textContent = Math.round(R.dP) + " g";
+    $("dK").textContent = Math.round(R.dK) + " g";
+
+    // frequency
+    var f = freqInfo(R.strength);
+    $("freqOut").textContent = f.text;
+
+    // overdose / large-quantity warning
+    var warn = $("warnBox"), wmsg = "";
+    if(R.drivePct>0 && grams >= 1400){
+      wmsg = "That’s a large single dose for this bed. Split it into several lighter feedings rather than scattering it all at once — heavy applications can scorch roots and foliage.";
+    } else if(R.driveLetter!=="nitrogen" && R.drivePct>0){
+      wmsg = "This feed has no nitrogen, so the amount is set by its "+R.driveLetter+" content (dosed more conservatively). Phosphate especially is best guided by a soil test.";
+    }
+    warn.className = wmsg ? "warn show" : "warn";
+    warn.textContent = wmsg;
+
+    // note
+    var note;
+    if(R.drivePct<=0){
+      note="This blend lists no nutrients to dose against. Check the bag for a recommended rate.";
+    } else if(R.driveLetter!=="nitrogen"){
+      note="Amounts are set by this feed’s "+R.driveLetter+" rather than nitrogen. Follow the bag where it differs.";
+    } else {
+      note="Rates follow the standard "+trimNum(R.strength)+" lb of nitrogen per 1,000 sq ft. Always check your bag, as concentrations vary.";
+    }
+    $("resNote").textContent = note;
+
+    renderBuy(R, f);
+    announce(R, f);
+  }
+
+  function trimNum(x){ return (Math.round(x*100)/100).toString().replace(/\.0+$/,"").replace(/(\.\d*?)0+$/,"$1"); }
+
+  function renderBuy(R, f){
+    var out = $("buyOut");
+    if(!(state.bag>0) || !(R.grams>0)){ out.innerHTML=""; return; }
+    var bagG = gramsToBag();
+    var perBag = bagG / R.grams;                 // feedings per bag
+    var seasonWeeks = 26;                          // ~Apr–Oct
+    var feedsPerSeason = Math.max(1, Math.round(seasonWeeks / f.weeks));
+    var seasonG = R.grams * feedsPerSeason;
+    var bagsSeason = seasonG / bagG;
+    var html = "";
+    html += line("Feedings per bag", (perBag>=10? Math.round(perBag) : perBag.toFixed(1)));
+    html += line("Feedings per season", feedsPerSeason+" (≈"+f.text.replace("every ","")+")");
+    html += line("Bags per season", (bagsSeason<1? "under 1" : bagsSeason.toFixed(1)));
+    if(state.price>0){
+      html += line("Cost per feeding", money(state.price/perBag));
+      html += line("Cost per season", money(state.price*bagsSeason));
+    }
+    out.innerHTML = html;
+    function line(a,b){ return '<div class="r-line"><span>'+a+'</span><span>'+b+'</span></div>'; }
+  }
+  function money(x){
+    if(!isFinite(x)) return "—";
+    return "$"+(x<10? x.toFixed(2) : Math.round(x).toString());
+  }
+
+  function announce(R, f){
+    var msg;
+    if(R.grams<1){ msg = "No feed needed yet."; }
+    else {
+      var amt = isMet() ? (R.grams>=1000?(R.grams/1000).toFixed(2)+" kilograms":Math.round(R.grams/5)*5+" grams")
+                        : R.oz.toFixed(1)+" ounces";
+      msg = "Scatter about "+amt+" of "+state.n+"-"+state.p+"-"+state.k+" over "+areaDisp(R.area)+", "+f.text+".";
+    }
+    $("liveRegion").textContent = msg;
+  }
+
+  /* ================= RENDER ================= */
+  function renderBlend(animate){
+    bumpChip("chipN", $("chip-n"), state.n);
+    bumpChip("chipP", $("chip-p"), state.p);
+    bumpChip("chipK", $("chip-k"), state.k);
+
+    var nm = state.custom ? ("Custom · "+state.n+"–"+state.p+"–"+state.k) : state.name;
+    $("blend-name").textContent = nm;
+    $("blend-reading").textContent = blendReading(state.n,state.p,state.k);
+
+    // legend highlight
+    var lead = leadNutrient(state.n,state.p,state.k);
+    ["n","p","k"].forEach(function(key){
+      $("leg"+key.toUpperCase()).classList.toggle("lead", key===lead);
+    });
+
+    // feed echo in calculator
+    $("feName").textContent = nm;
+    $("feN").textContent = state.n; $("feP").textContent = state.p; $("feK").textContent = state.k;
+
+    // accessible description of the plant
+    $("plant").setAttribute("aria-label",
+      "Specimen for a "+state.n+"-"+state.p+"-"+state.k+" feed. "+blendReading(state.n,state.p,state.k));
+
+    drawPlant(state.n,state.p,state.k,animate);
+    recalc();
+    saveState();
+  }
+
+  function bumpChip(chipId, valEl, v){
+    valEl.textContent = v;
+    if(prefersReduced) return;
+    var chip = $(chipId);
+    chip.classList.remove("bump");
+    void chip.offsetWidth;
+    chip.classList.add("bump");
+    setTimeout(function(){ chip.classList.remove("bump"); }, 220);
+  }
+
+  function flashEcho(){
+    var e = $("feedEcho");
+    e.classList.remove("flash"); void e.offsetWidth; e.classList.add("flash");
+  }
+
+  /* ================= STATE PERSISTENCE ================= */
+  function serialize(){
+    var p = new URLSearchParams();
+    p.set("b", state.n+"-"+state.p+"-"+state.k);
+    if(!state.custom) p.set("f", state.name);
+    p.set("l", state.len); p.set("w", state.wid); p.set("s", state.str);
+    p.set("u", state.units);
+    return p.toString();
+  }
+  function saveState(){
+    var q = serialize();
+    try{ history.replaceState(null, "", "#"+q); }catch(e){}
+    try{ localStorage.setItem("fertilizerPlot", q); }catch(e){}
+  }
+  function loadState(){
+    var raw = (location.hash && location.hash.length>1) ? location.hash.slice(1) : null;
+    if(!raw){ try{ raw = localStorage.getItem("fertilizerPlot"); }catch(e){} }
+    if(!raw) return;
+    var p = new URLSearchParams(raw);
+    if(p.get("b")){
+      var m = p.get("b").split("-").map(Number);
+      if(m.length===3 && m.every(function(x){return !isNaN(x);})){
+        state.n=clamp(m[0],0,25); state.p=clamp(m[1],0,25); state.k=clamp(m[2],0,25);
+        state.custom=true; state.name="Custom";
+      }
+    }
+    if(p.get("f")){
+      var pr = PRESETS.filter(function(x){return x.name===p.get("f");})[0];
+      if(pr){ state.n=pr.n; state.p=pr.p; state.k=pr.k; state.name=pr.name; state.custom=false; }
+    }
+    if(p.get("l")) state.len=clamp(+p.get("l"),2,40);
+    if(p.get("w")) state.wid=clamp(+p.get("w"),2,25);
+    if(p.get("s")) state.str=clamp(+p.get("s"),0.25,1);
+    if(p.get("u")==="met"||p.get("u")==="imp") state.units=p.get("u");
+  }
+  function clamp(x,a,b){ x=+x; if(isNaN(x))return a; return Math.max(a,Math.min(b,x)); }
+
+  /* ================= WIRING ================= */
+  // plant-type recommender
+  var tg = $("types");
+  PLANTS.forEach(function(pt){
+    var b=document.createElement("button");
+    b.className="type"; b.type="button"; b.setAttribute("aria-pressed","false");
+    b.textContent=pt.label; b.dataset.label=pt.label;
+    b.addEventListener("click", function(){
+      var pr = PRESETS.filter(function(x){return x.name===pt.preset;})[0];
+      if(!pr) return;
+      applyPreset(pr, true);
+      state.str = pt.str;
+      $("str").value = pt.str;
+      var sl=strengthLabel(pt.str); $("strLabel").textContent=sl.l; $("strSub").textContent=sl.sub;
+      Array.prototype.forEach.call(tg.children,function(c){ c.setAttribute("aria-pressed", c.dataset.label===pt.label?"true":"false"); });
+      $("typeBlurb").textContent = pt.blurb;
+      flashEcho();
+      renderBlend(true);
+    });
+    tg.appendChild(b);
+  });
+
+  // presets
+  var pg = $("presets");
+  PRESETS.forEach(function(pr, i){
+    var b=document.createElement("button");
+    b.className="preset"; b.type="button";
+    b.setAttribute("aria-pressed", "false");
+    b.dataset.name=pr.name;
+    b.innerHTML='<span class="pn">'+pr.name+'</span><span class="pr">'+pr.short+'</span>';
+    b.addEventListener("click", function(){ applyPreset(pr, false); flashEcho(); renderBlend(true); });
+    pg.appendChild(b);
+  });
+
+  function applyPreset(pr, fromType){
+    state.n=pr.n; state.p=pr.p; state.k=pr.k; state.name=pr.name; state.custom=false;
+    $("slN").value=pr.n; $("slP").value=pr.p; $("slK").value=pr.k;
+    $("cn").textContent=pr.n; $("cp").textContent=pr.p; $("ck").textContent=pr.k;
+    Array.prototype.forEach.call(pg.children,function(c){ c.setAttribute("aria-pressed", c.dataset.name===pr.name?"true":"false"); });
+    if(!fromType){
+      Array.prototype.forEach.call(tg.children,function(c){ c.setAttribute("aria-pressed","false"); });
+      $("typeBlurb").textContent = "Pick what you’re growing and we’ll suggest a feed and a feeding strength.";
+    }
+  }
+
+  // "use this feed" buttons in explainer
+  Array.prototype.forEach.call(document.querySelectorAll(".nut .use"), function(btn){
+    btn.addEventListener("click", function(){
+      var name = btn.getAttribute("data-preset");
+      var pr = PRESETS.filter(function(x){return x.name===name;})[0];
+      if(!pr) return;
+      applyPreset(pr, false); flashEcho(); renderBlend(true);
+      $("specimen").scrollIntoView({behavior: prefersReduced?"auto":"smooth", block:"start"});
+      toast("Feed set to "+pr.name);
+    });
+  });
+
+  // custom toggle
+  var ct=$("customToggle"), cs=$("customSliders");
+  ct.addEventListener("click", function(){
+    var open = cs.hasAttribute("hidden");
+    if(open){ cs.removeAttribute("hidden"); ct.setAttribute("aria-expanded","true"); ct.innerHTML="Hide custom blend ↑"; }
+    else { cs.setAttribute("hidden",""); ct.setAttribute("aria-expanded","false"); ct.innerHTML="Mix a custom blend →"; }
+  });
+
+  function onCustom(){
+    state.n=+$("slN").value; state.p=+$("slP").value; state.k=+$("slK").value;
+    state.custom=true; state.name="Custom";
+    $("cn").textContent=state.n; $("cp").textContent=state.p; $("ck").textContent=state.k;
+    Array.prototype.forEach.call(pg.children,function(c){ c.setAttribute("aria-pressed","false"); });
+    Array.prototype.forEach.call(tg.children,function(c){ c.setAttribute("aria-pressed","false"); });
+    rafRender(false);
+  }
+  ["slN","slP","slK"].forEach(function(id){ $(id).addEventListener("input", onCustom); });
+
+  // throttle redraws to one per frame while dragging
+  var pending=false, pendingAnim=false;
+  function rafRender(animate){
+    pendingAnim = pendingAnim || animate;
+    if(pending) return;
+    pending=true;
+    requestAnimationFrame(function(){
+      pending=false; var a=pendingAnim; pendingAnim=false;
+      renderBlend(a);
+    });
+  }
+
+  // reset
+  $("resetBtn").addEventListener("click", function(){
+    var keepUnits = state.units;
+    state = Object.assign({}, DEFAULTS); state.units=keepUnits;
+    syncControls();
+    var pr = PRESETS[0]; applyPreset(pr, false);
+    renderBlend(true);
+    toast("Back to a balanced 10–10–10");
+  });
+
+  // plot sliders
+  function onPlot(){
+    state.len=+$("len").value; state.wid=+$("wid").value; state.str=+$("str").value;
+    $("lenV").textContent=lenDisp(state.len); $("widV").textContent=lenDisp(state.wid);
+    var sl=strengthLabel(state.str);
+    $("strLabel").textContent=sl.l; $("strSub").textContent=sl.sub;
+    $("str").setAttribute("aria-valuetext", sl.l);
+    recalc(); saveState();
+  }
+  ["len","wid","str"].forEach(function(id){ $(id).addEventListener("input", onPlot); });
+
+  // bag & price
+  $("bagSize").addEventListener("input", function(){ state.bag = parseFloat(this.value)||0; recalc(); });
+  $("bagPrice").addEventListener("input", function(){ var v=parseFloat(this.value); state.price = (v>0)?v:null; recalc(); });
+
+  // units toggle
+  function setUnits(u){
+    state.units=u;
+    $("unitImp").setAttribute("aria-pressed", u==="imp"?"true":"false");
+    $("unitMet").setAttribute("aria-pressed", u==="met"?"true":"false");
+    $("lenU").textContent = isMet()?"m":"ft";
+    $("widU").textContent = isMet()?"m":"ft";
+    $("bagU").textContent = isMet()?"kg":"lb";
+    // convert bag default sensibly when switching
+    $("lenV").textContent=lenDisp(state.len); $("widV").textContent=lenDisp(state.wid);
+    recalc(); saveState();
+  }
+  $("unitImp").addEventListener("click", function(){ setUnits("imp"); });
+  $("unitMet").addEventListener("click", function(){ setUnits("met"); });
+
+  // theme toggle
+  function setTheme(t, persist){
+    document.documentElement.setAttribute("data-theme", t);
+    var dark = t==="dark";
+    $("themeToggle").setAttribute("aria-pressed", dark?"true":"false");
+    $("themeIcon").textContent = dark? "☀" : "☾";
+    $("themeText").textContent = dark? "Light" : "Dark";
+    readColors();
+    if(persist){ try{ localStorage.setItem("fertilizerTheme", t); }catch(e){} }
+    drawPlant(state.n,state.p,state.k,false); // repaint with themed colors
+  }
+  $("themeToggle").addEventListener("click", function(){
+    var cur = document.documentElement.getAttribute("data-theme");
+    setTheme(cur==="dark"?"light":"dark", true);
+  });
+
+  // copy link
+  $("copyBtn").addEventListener("click", function(){
+    saveState();
+    var url = location.href;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(function(){ toast("Link copied — your plot travels with it"); },
+                                              function(){ toast("Copy failed — the link is in the address bar"); });
+    } else { toast("Your plot is saved in the address bar"); }
+  });
+
+  // schedule + .ics
+  function buildSchedule(){
+    var f = freqInfo(state.str);
+    var weeks = f.weeks;
+    var now = new Date();
+    var dates = [];
+    var year = now.getFullYear();
+    var seasonEnd = new Date(year, 9, 15); // mid-Oct
+    var start = new Date(now);
+    // if before April, start at Apr 1
+    var april = new Date(year, 3, 1);
+    if(start < april) start = april;
+    var d = new Date(start);
+    var guard=0;
+    while(d <= seasonEnd && guard<20){ dates.push(new Date(d)); d.setDate(d.getDate()+Math.round(weeks*7)); guard++; }
+    if(dates.length===0) dates.push(new Date(now));
+    return dates;
+  }
+  function renderSchedule(){
+    var dates = buildSchedule();
+    var ul = $("schedList"); ul.innerHTML="";
+    var fmt = {month:"short", day:"numeric"};
+    dates.slice(0,6).forEach(function(dt,i){
+      var li=document.createElement("li");
+      li.textContent = dt.toLocaleDateString(undefined, fmt);
+      if(i===0) li.className="first";
+      ul.appendChild(li);
+    });
+  }
+  function pad(x){ return x<10? "0"+x : ""+x; }
+  function icsDate(dt){ return dt.getFullYear()+pad(dt.getMonth()+1)+pad(dt.getDate()); }
+  $("icsBtn").addEventListener("click", function(){
+    var dates = buildSchedule();
+    renderSchedule();
+    var lines = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//The Fertilizer Plot//EN","CALSCALE:GREGORIAN"];
+    var label = (state.custom?"Custom":state.name)+" "+state.n+"-"+state.p+"-"+state.k;
+    dates.forEach(function(dt,i){
+      var end=new Date(dt); end.setDate(end.getDate()+1);
+      lines.push("BEGIN:VEVENT");
+      lines.push("UID:fertplot-"+icsDate(dt)+"-"+i+"@local");
+      lines.push("DTSTART;VALUE=DATE:"+icsDate(dt));
+      lines.push("DTEND;VALUE=DATE:"+icsDate(end));
+      lines.push("SUMMARY:Feed the garden — "+label);
+      lines.push("DESCRIPTION:Scatter and water in your "+label+" feed. From The Fertilizer Plot.");
+      lines.push("END:VEVENT");
+    });
+    lines.push("END:VCALENDAR");
+    var blob = new Blob([lines.join("\r\n")], {type:"text/calendar"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob); a.download="feeding-schedule.ics";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+    toast("Schedule downloaded — "+dates.length+" feedings this season");
+  });
+
+  // print
+  $("printBtn").addEventListener("click", function(){ window.print(); });
+
+  // toast helper
+  var toastTimer=null;
+  function toast(msg){
+    var t=$("toast"); t.textContent=msg; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.classList.remove("show"); }, 2600);
+  }
+
+  // sync DOM controls from state (after load/reset)
+  function syncControls(){
+    $("slN").value=state.n; $("slP").value=state.p; $("slK").value=state.k;
+    $("cn").textContent=state.n; $("cp").textContent=state.p; $("ck").textContent=state.k;
+    $("len").value=state.len; $("wid").value=state.wid; $("str").value=state.str;
+    $("lenV").textContent=lenDisp(state.len); $("widV").textContent=lenDisp(state.wid);
+    var sl=strengthLabel(state.str); $("strLabel").textContent=sl.l; $("strSub").textContent=sl.sub;
+    $("str").setAttribute("aria-valuetext", sl.l);
+    $("bagSize").value=state.bag;
+    // reflect preset selection
+    Array.prototype.forEach.call(pg.children,function(c){ c.setAttribute("aria-pressed", (!state.custom && c.dataset.name===state.name)?"true":"false"); });
+  }
+
+  /* ================= INIT ================= */
+  // theme: stored pref, else system
+  var storedTheme=null; try{ storedTheme=localStorage.getItem("fertilizerTheme"); }catch(e){}
+  var initTheme = storedTheme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark":"light");
+  readColors();
+  setTheme(initTheme, false);
+
+  loadState();
+  setUnits(state.units);
+  syncControls();
+  renderBlend(false);
+  renderSchedule();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Companion Bed — A Cottage Garden Companion</title>
+<meta name="description" content="The Companion Bed — a cottage-garden companion that shows which plants grow well together: pick any of 75+ plants and see its ranked good neighbours, why they pair, and which to keep apart." />
+<meta name="theme-color" content="#E9E3D2" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#1A1F18" media="(prefers-color-scheme: dark)" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="The Companion Bed — A Cottage Garden Companion" />
+<meta property="og:description" content="Pick a cottage-garden plant and see its ranked companions — why each pairs, how confident the lore is, and which neighbours to keep well apart." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='14'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* Tokens copied verbatim from fertilizer.html — keep in sync. */
+  :root{
+    /* paper / ink */
+    --paper:#E9E3D2;
+    --paper-2:#F1ECDD;
+    --paper-3:#FBF8F0;
+    --ink:#23301F;
+    --ink-soft:#5C6450;
+    --line:#CBC3AA;
+    --line-soft:#D9D2BC;
+
+    /* decorative accents (bars, borders, glyphs) */
+    --leaf:#4E7C4A;   /* Nitrogen */
+    --bloom:#C25D7C;  /* Phosphorus */
+    --vigour:#C28B36; /* Potassium */
+    --stem:#3E5B3C;
+
+    /* accent variants that meet contrast as TEXT on paper */
+    --leaf-text:#3C6238;
+    --bloom-text:#A6395A;
+    --vigour-text:#8A5E14;
+
+    /* plant fills (read by JS so dark mode adapts) */
+    --leaf-rich:#3f6f3b;
+    --leaf-mid:#4E7C4A;
+    --leaf-pale:#6f9165;
+    --bloom-stroke:#a84867;
+
+    /* inverted "result" surface — tokenised so it can re-theme */
+    --result-bg:#23301F;
+    --result-fg:#FBF8F0;
+    --result-soft:#C7D2BC;
+    --result-muted:#AEBBA2;
+    --result-faint:#9BA890;
+    --result-rule:rgba(255,255,255,.14);
+    --result-fill:rgba(255,255,255,.06);
+    --result-n:#9BD08F; --result-p:#E89DB4; --result-k:#E5BE78;
+    --result-strong:#ffffff;
+
+    --panel-hi:rgba(255,255,255,.65);
+    --grain-1:rgba(255,255,255,.18);
+    --grain-2:rgba(90,80,40,.05);
+    --shadow:rgba(35,48,31,.10);
+    --focus:rgba(166,57,90,.55);
+
+    /* --- added for companion-planter (NOT in fertilizer.html) --- */
+    --warning:#C8842F;        /* amber border/accent for the antagonist panel on paper */
+    --warning-text:#9A5A12;   /* AA-passing amber caution TEXT on paper */
+    --stem-text:#36533A;      /* 4th accent-as-text variant (support/shade tags on paper) */
+    --result-stem:#86CBB0;    /* bright stem tint for support/shade tags on the dark result surface */
+  }
+
+  html[data-theme="dark"]{
+    --paper:#171C14;
+    --paper-2:#202619;
+    --paper-3:#28301F;
+    --ink:#ECE7D6;
+    --ink-soft:#A9B49C;
+    --line:#3C4634;
+    --line-soft:#333c2c;
+
+    --leaf:#79A86F;
+    --bloom:#D98199;
+    --vigour:#D7A85C;
+    --stem:#86A878;
+
+    --leaf-text:#9CC78F;
+    --bloom-text:#EBA6BA;
+    --vigour-text:#E3BD74;
+
+    --leaf-rich:#7FB173;
+    --leaf-mid:#6f9c64;
+    --leaf-pale:#5d8753;
+    --bloom-stroke:#b86981;
+
+    --result-bg:#0F140C;
+    --result-fg:#ECE7D6;
+    --result-soft:#BCC9AF;
+    --result-muted:#94A287;
+    --result-faint:#79866C;
+    --result-rule:rgba(255,255,255,.10);
+    --result-fill:rgba(255,255,255,.05);
+    --result-strong:#ffffff;
+
+    --panel-hi:rgba(255,255,255,.06);
+    --grain-1:rgba(255,255,255,.04);
+    --grain-2:rgba(0,0,0,.18);
+    --shadow:rgba(0,0,0,.45);
+    --focus:rgba(235,166,186,.55);
+
+    /* --- added for companion-planter (NOT in fertilizer.html) --- */
+    --warning:#D7A85C;
+    --warning-text:#E8C079;
+    --stem-text:#92BE84;
+    --result-stem:#86CBB0;
+  }
+
+  /* ---------- base (shared with fertilizer.html) ---------- */
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Hanken Grotesk",system-ui,sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    transition:background .35s ease, color .35s ease;
+    background-image:
+      radial-gradient(circle at 20% 30%, var(--grain-1), transparent 60%),
+      radial-gradient(circle at 80% 70%, var(--grain-2), transparent 55%);
+  }
+
+  .wrap{max-width:1120px;margin:0 auto;padding:clamp(20px,4vw,56px);}
+
+  /* ---------- shared cross-tool nav ---------- */
+  .sitenav{
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    margin-bottom:10px;font-size:.8rem;font-weight:600;letter-spacing:.01em;
+  }
+  .sitenav .brand{color:var(--ink-soft);display:inline-flex;align-items:center;gap:.4em;}
+  .sitenav a{
+    color:var(--bloom-text);text-decoration:none;
+    display:inline-flex;align-items:center;gap:.4em;
+    padding:5px 2px;border-bottom:1px solid transparent;min-height:34px;
+    transition:border-color .15s,color .15s;
+  }
+  .sitenav a:hover{border-bottom-color:var(--bloom);}
+  .sitenav a:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:2px;}
+  .sitenav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--ink);cursor:default;}
+
+  /* ---------- top utility bar ---------- */
+  .toolbar{display:flex;justify-content:flex-end;gap:10px;margin-bottom:6px;flex-wrap:wrap;}
+  .icon-btn{
+    font-family:inherit;font-size:.8rem;font-weight:600;color:var(--ink-soft);
+    background:var(--paper-2);border:1px solid var(--line);border-radius:999px;
+    padding:6px 14px;cursor:pointer;min-height:34px;display:inline-flex;align-items:center;gap:.45em;
+    transition:border-color .15s,color .15s,background .15s;
+  }
+  .icon-btn:hover{border-color:var(--bloom);color:var(--ink);}
+  .icon-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+
+  /* ---------- Hero ---------- */
+  .eyebrow{
+    font-size:.74rem;letter-spacing:.26em;text-transform:uppercase;
+    font-weight:600;color:var(--bloom-text);
+    display:flex;align-items:center;gap:.7em;
+  }
+  .eyebrow::before,.eyebrow::after{content:"";height:1px;background:var(--line);flex:0 0 28px;}
+  .eyebrow::after{flex:1;}
+
+  h1.title{
+    font-family:"Fraunces",serif;
+    font-optical-sizing:auto;
+    font-weight:500;
+    font-style:italic;
+    font-size:clamp(2.7rem,8vw,5.4rem);
+    line-height:.96;
+    letter-spacing:-.01em;
+    margin:.28em 0 .12em;
+    max-width:14ch;
+  }
+  .lede{
+    font-size:clamp(1.02rem,1.6vw,1.22rem);
+    color:var(--ink-soft);
+    max-width:48ch;
+    margin:0;
+  }
+  .lede b{color:var(--ink);font-weight:600;}
+  .jump{margin:14px 0 0;font-size:.9rem;}
+  .jump a{color:var(--bloom-text);font-weight:600;text-decoration:underline;text-underline-offset:3px;}
+  .jump a:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:2px;}
+
+  .sprig{display:block;margin:28px 0 8px;color:var(--line);}
+
+  /* ---------- Section scaffold ---------- */
+  section{margin-top:clamp(40px,6vw,72px);}
+  .sec-head{display:flex;align-items:baseline;gap:.8em;margin-bottom:22px;}
+  .sec-num{
+    font-family:"Fraunces",serif;font-style:italic;font-size:1rem;
+    color:var(--bloom-text);font-weight:600;
+  }
+  .sec-title{
+    font-family:"Fraunces",serif;font-weight:500;
+    font-size:clamp(1.5rem,3vw,2.05rem);letter-spacing:-.01em;margin:0;
+  }
+  .sec-sub{color:var(--ink-soft);font-size:.95rem;margin:.2em 0 0;}
+
+  /* ---------- specimen + chooser layout ---------- */
+  .studio{
+    display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);
+    gap:clamp(18px,2.5vw,34px);align-items:stretch;
+  }
+  .panel{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:3px;
+    box-shadow:0 1px 0 var(--panel-hi) inset, 0 18px 36px -28px var(--shadow);
+    padding:clamp(18px,2.4vw,28px);
+    transition:background .35s ease, border-color .35s ease;
+  }
+
+  /* specimen plate (filled by B3 renderPlate) */
+  .plate{position:relative;display:flex;flex-direction:column;background:var(--paper-3);min-height:clamp(280px,40vw,360px);}
+  .plate .corner{position:absolute;width:18px;height:18px;border:1px solid var(--line);}
+  .plate .c1{top:10px;left:10px;border-right:0;border-bottom:0;}
+  .plate .c2{top:10px;right:10px;border-left:0;border-bottom:0;}
+  .plate .c3{bottom:10px;left:10px;border-right:0;border-top:0;}
+  .plate .c4{bottom:10px;right:10px;border-left:0;border-top:0;}
+
+  .specimen-stage{flex:1;display:flex;align-items:center;justify-content:center;padding:14px 6px 4px;}
+  .label-tag{
+    text-align:center;border-top:1px dashed var(--line);
+    margin:6px 14px 4px;padding-top:10px;
+  }
+  .label-tag .latin{
+    font-family:"Fraunces",serif;font-style:italic;font-size:1.05rem;color:var(--ink);
+  }
+  .label-tag .reading{font-size:.86rem;color:var(--ink-soft);margin-top:3px;}
+
+  /* chooser */
+  .chooser h3{font-family:"Fraunces",serif;font-weight:500;font-size:1.18rem;margin:0 0 4px;}
+  .hint{color:var(--ink-soft);font-size:.85rem;margin:0 0 14px;}
+  .sub-h{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* search box */
+  .search{
+    width:100%;font-family:inherit;font-size:1rem;color:var(--ink);
+    background:var(--paper-3);border:1px solid var(--line);border-radius:3px;
+    padding:10px 12px;min-height:44px;
+  }
+  .search:focus-visible{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--bloom);}
+
+  /* ---------- pills (authored from DESIGN.md — fertilizer.html has none) ---------- */
+  .pill-row{display:flex;flex-wrap:wrap;gap:7px;}
+  .pill{
+    font-family:inherit;font-size:.78rem;font-weight:600;letter-spacing:.04em;
+    cursor:pointer;color:var(--ink);
+    background:var(--paper-3);border:1px solid var(--line);border-radius:999px;
+    padding:7px 14px;min-height:36px;display:inline-flex;align-items:center;gap:.4em;
+    transition:border-color .15s,background .15s,color .15s,transform .05s;
+  }
+  .pill:hover{border-color:var(--bloom);}
+  .pill:active{transform:translateY(1px);}
+  .pill:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+  .pill[aria-pressed="true"],.pill-active{
+    background:var(--ink);color:var(--paper-3);border-color:var(--ink);
+  }
+  /* accent swatch on the benefit-filter pills (decorative — not text) */
+  .pill-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 auto;}
+
+  /* selectable plant list (rows filled by B3) */
+  .plant-list{
+    display:flex;flex-direction:column;gap:6px;
+    max-height:clamp(280px,46vh,440px);overflow:auto;
+    margin-top:4px;padding:2px;
+  }
+  .plant-list:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:3px;}
+  .plant-opt{
+    text-align:left;font-family:inherit;font-size:.92rem;cursor:pointer;color:var(--ink);
+    background:var(--paper-3);border:1px solid var(--line);border-radius:2px;
+    padding:8px 12px;min-height:44px;display:flex;align-items:center;gap:.6em;
+    transition:border-color .15s,background .15s;
+  }
+  .plant-opt:hover{border-color:var(--bloom);}
+  .plant-opt:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+  .plant-opt[aria-selected="true"]{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink) inset;}
+
+  /* benefit-filter row sits above the result card — give it breathing room
+     (collapses cleanly when renderReasonFilter() hides the row via display:none) */
+  #reasonFilter{margin-bottom:clamp(14px,2vw,20px);}
+
+  /* ---------- result panel (ink) — companions; copied shell from fertilizer.html ---------- */
+  .result{
+    background:var(--result-bg);color:var(--result-fg);border-radius:3px;
+    padding:clamp(20px,2.4vw,28px);
+    box-shadow:0 22px 40px -26px rgba(0,0,0,.55);
+    transition:background .35s ease;
+  }
+  .result .r-eyebrow{font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;color:var(--result-faint);font-weight:600;}
+
+  /* ---------- antagonist panel (amber on paper) — new; uses --warning tokens ---------- */
+  .antag{
+    margin-top:18px;
+    background:var(--paper-2);
+    border:1px solid var(--warning);
+    border-left:4px solid var(--warning);
+    border-radius:3px;
+    padding:clamp(16px,2.2vw,24px);
+    box-shadow:0 1px 0 var(--panel-hi) inset, 0 18px 36px -28px var(--shadow);
+    transition:background .35s ease, border-color .35s ease;
+  }
+  .antag .antag-eyebrow{
+    font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;font-weight:700;
+    color:var(--warning-text);
+  }
+  .antag .antag-note{color:var(--warning-text);font-size:.88rem;line-height:1.45;}
+
+  /* ---------- reason explainer cards (Section 03 — filled by B4) ---------- */
+  .nutrients{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .nut{
+    background:var(--paper-2);border:1px solid var(--line);border-radius:3px;
+    padding:20px 18px;position:relative;overflow:hidden;
+  }
+  .nut .bar{position:absolute;top:0;left:0;width:100%;height:4px;}
+  .nut .name{font-weight:700;font-size:1.02rem;margin:2px 0 1px;}
+  .nut .role{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin-bottom:10px;}
+  .nut p{font-size:.9rem;color:var(--ink-soft);margin:0 0 6px;}
+  .nut p b{color:var(--ink);}
+
+  /* confidence legend (static slot; content wired in B4) */
+  .conf-legend{
+    margin-top:22px;padding-top:16px;border-top:1px solid var(--line);
+    font-size:.86rem;color:var(--ink-soft);display:flex;flex-wrap:wrap;gap:18px;
+  }
+  .conf-legend .ci{display:flex;align-items:baseline;gap:.5em;}
+  .conf-legend .ci b{color:var(--ink);font-weight:600;}
+  .conf-legend .trad{text-decoration:underline dotted;text-underline-offset:3px;}
+
+  /* ---------- footer ---------- */
+  footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;
+    font-size:.82rem;color:var(--ink-soft);}
+  footer .sig{font-family:"Fraunces",serif;font-style:italic;color:var(--ink);}
+
+  /* visually-hidden live region */
+  .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+
+  /* toast */
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--paper-3);padding:10px 18px;border-radius:999px;
+    font-size:.86rem;font-weight:600;box-shadow:0 10px 30px -10px var(--shadow);
+    opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ========== B3 — interaction styles (emblem, plate, companions, antagonists, list rows) ========== */
+
+  /* category emblem inside the specimen plate */
+  .emblem{display:block;width:clamp(120px,30vw,168px);height:auto;}
+
+  /* specimen plate content */
+  .label-tag .pname{
+    font-family:"Fraunces",serif;font-weight:500;font-size:clamp(1.3rem,3vw,1.6rem);
+    color:var(--ink);margin:0 0 1px;line-height:1.05;
+  }
+  .feed-line{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    flex-wrap:wrap;margin-top:14px;
+  }
+  .feed-chip{
+    font-size:.76rem;font-weight:600;color:var(--leaf-text);
+    background:var(--paper-2);border:1px solid var(--line);border-radius:999px;
+    padding:5px 12px;display:inline-flex;align-items:center;gap:.4em;
+  }
+  .feed-chip .fk{color:var(--ink-soft);font-weight:600;letter-spacing:.04em;}
+  .feed-link{
+    font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer;
+    color:var(--paper-3);background:var(--ink);border:1px solid var(--ink);
+    border-radius:999px;padding:7px 15px;min-height:36px;
+    display:inline-flex;align-items:center;gap:.4em;
+    transition:opacity .15s,transform .05s;
+  }
+  .feed-link:hover{opacity:.9;}
+  .feed-link:active{transform:translateY(1px);}
+  .feed-link:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+
+  /* selectable plant list rows */
+  .plant-opt .opt-name{font-weight:600;}
+  .plant-opt .opt-meta{
+    margin-left:auto;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ink-soft);font-weight:600;
+  }
+  .plant-opt.opt-empty{color:var(--ink-soft);cursor:default;justify-content:center;}
+
+  /* ranked companions (rows on the dark ink result panel) */
+  .result .r-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:8px;}
+  .result .r-count{font-size:.8rem;color:var(--result-muted);font-weight:600;white-space:nowrap;}
+  .comp-list{display:flex;flex-direction:column;}
+  .comp-row{
+    display:flex;flex-direction:column;gap:7px;
+    padding:13px 0;border-top:1px solid var(--result-rule);
+  }
+  .comp-row:first-child{border-top:0;}
+  .comp-head{display:flex;align-items:baseline;gap:.6em;flex-wrap:wrap;}
+  .comp-name{font-family:"Fraunces",serif;font-weight:500;font-size:1.08rem;color:var(--result-fg);}
+  .comp-name.trad{text-decoration:underline dotted;text-underline-offset:3px;color:var(--result-soft);}
+  .comp-cat{font-size:.68rem;letter-spacing:.13em;text-transform:uppercase;color:var(--result-faint);font-weight:600;}
+  .comp-tags{display:flex;flex-wrap:wrap;gap:6px;}
+  .tag{
+    font-size:.73rem;font-weight:600;letter-spacing:.01em;
+    padding:3px 10px;border-radius:999px;background:var(--result-fill);
+  }
+  .tag-leaf{color:var(--result-n);}
+  .tag-bloom{color:var(--result-p);}
+  .tag-vigour{color:var(--result-k);}
+  .tag-stem{color:var(--result-stem);}
+  .comp-empty{color:var(--result-muted);font-size:.95rem;padding:6px 0;}
+
+  /* antagonist rows (amber paper panel) */
+  .antag-list{display:flex;flex-direction:column;margin-top:10px;}
+  .antag-row{padding:11px 0;border-top:1px solid var(--line-soft);}
+  .antag-row:first-child{border-top:0;}
+  .antag-row .antag-name{font-weight:700;color:var(--ink);font-size:.98rem;display:block;margin-bottom:2px;}
+  .antag-empty{color:var(--ink-soft);font-size:.92rem;margin-top:8px;}
+
+  /* selection fade (applied by JS only when motion is allowed) */
+  @keyframes plateFade{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+  .anim-fade{animation:plateFade .28s ease both;}
+
+  /* ---------- motion ---------- */
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    .anim-fade{animation:none;}
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:860px){
+    .studio{grid-template-columns:1fr;}
+  }
+  @media (max-width:620px){
+    .nutrients{grid-template-columns:1fr;}
+  }
+  @media (max-width:430px){
+    .eyebrow::before{display:none;}
+    .pill-row{gap:6px;}
+    .search{width:100%;}
+  }
+
+  /* ---------- print: a clean planting card ---------- */
+  @media print{
+    .toolbar,.sitenav,.chooser,.search,#cats,#reasonFilter,.jump,.sprig,.sub-h{display:none !important;}
+    body{background:#fff !important;color:#000;background-image:none;}
+    .panel,.plate,.antag{box-shadow:none;border-color:#999;}
+    .result{background:#fff !important;color:#000 !important;box-shadow:none;border:1px solid #999;}
+    .result .r-eyebrow{color:#000 !important;}
+    /* result rows carry dark-surface light tints — force dark-on-white so the printed card stays legible (theme-independent hexes; fixes dark-mode printing too) */
+    .result .comp-name{color:#1A1A1A !important;}
+    .result .comp-name.trad{color:#444 !important;}
+    .result .comp-cat,.result .r-count,.result .comp-empty{color:#555 !important;}
+    .result .tag{background:#fff !important;border:1px solid #BBB;}
+    .result .tag-leaf{color:#3C6238 !important;}
+    .result .tag-bloom{color:#A6395A !important;}
+    .result .tag-vigour{color:#8A5E14 !important;}
+    .result .tag-stem{color:#36533A !important;}
+    section{break-inside:avoid;}
+    .studio{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- shared cross-tool nav (mirrored in fertilizer.html) -->
+  <nav class="sitenav" aria-label="Cottage garden companion tools">
+    <a class="brand" href="index.html"><span aria-hidden="true">&#127807;</span> The Cottage Garden Companion</a>
+    <a href="fertilizer.html">The Fertilizer Plot</a>
+    <a href="companion-planter.html" aria-current="page">The Companion Bed</a>
+  </nav>
+
+  <!-- top utility bar -->
+  <div class="toolbar" role="group" aria-label="Page tools">
+    <button class="icon-btn" id="copyLink" type="button" title="Copy a shareable link to this planting">
+      <span aria-hidden="true">&#128279;</span><span>Copy link</span>
+    </button>
+    <button class="icon-btn" id="printCard" type="button" title="Print this planting card">
+      <span aria-hidden="true">&#128424;</span><span>Print card</span>
+    </button>
+    <button class="icon-btn" id="themeToggle" type="button" aria-pressed="false" title="Toggle dark mode">
+      <span id="themeIcon" aria-hidden="true">&#9790;</span><span id="themeText">Dark</span>
+    </button>
+  </div>
+
+  <!-- HERO -->
+  <header>
+    <p class="eyebrow">A Backyard Cottage-Garden Companion</p>
+    <h1 class="title">The Companion Bed</h1>
+    <p class="lede">Some plants are the best of neighbours &#8212; trading <b>pest-cover, pollinators and nitrogen</b> across the soil. Pick what you&#8217;re growing and see its finest companions, why each pairs, and the few to keep well apart.</p>
+    <p class="jump"><a href="#why">New to companion planting? See why these pairings work &#8595;</a></p>
+    <svg class="sprig" width="180" height="16" viewBox="0 0 180 16" fill="none" aria-hidden="true">
+      <path d="M2 8 H72" stroke="currentColor"/>
+      <path d="M108 8 H178" stroke="currentColor"/>
+      <path d="M90 2 C86 6 84 8 90 8 C96 8 94 6 90 2 Z" fill="var(--bloom)" opacity=".85"/>
+      <path d="M90 14 C86 10 84 8 90 8 C96 8 94 10 90 14 Z" fill="var(--leaf)" opacity=".7"/>
+      <circle cx="90" cy="8" r="1.6" fill="var(--vigour)"/>
+    </svg>
+  </header>
+
+  <main>
+  <!-- 01 — CHOOSE A PLANT -->
+  <section id="choose">
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <div>
+        <h2 class="sec-title">Choose a plant</h2>
+        <p class="sec-sub">Search the cottage-garden roll or filter by kind, then pick what you&#8217;re growing.</p>
+      </div>
+    </div>
+
+    <div class="studio">
+      <!-- specimen plate (filled by B3 renderPlate) -->
+      <div class="panel plate">
+        <span class="corner c1"></span><span class="corner c2"></span>
+        <span class="corner c3"></span><span class="corner c4"></span>
+        <div id="plate"><!-- B3: category emblem, name/Latin, blurb, feed chip + deep-link button --></div>
+      </div>
+
+      <!-- chooser -->
+      <div class="panel chooser">
+        <h3>Find a plant</h3>
+        <p class="hint">Over seventy cottage-garden vegetables, herbs, flowers and fruit &#8212; search by name or narrow by kind.</p>
+
+        <input id="search" class="search" type="search" aria-label="Search plants by name" placeholder="Search plants&#8230;" autocomplete="off" />
+
+        <div class="sub-h">Kind</div>
+        <div id="cats" class="pill-row" role="group" aria-label="Filter by category"><!-- B3: category pills --></div>
+
+        <div class="sub-h">Plants</div>
+        <div id="plantList" class="plant-list" role="listbox" aria-label="Cottage-garden plants"><!-- B3: selectable rows (roving tabindex — one tab stop, arrow keys move within) --></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 — GOOD NEIGHBOURS & KEEP APART -->
+  <section id="neighbours">
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <div>
+        <h2 class="sec-title">Good neighbours &amp; keep apart</h2>
+        <p class="sec-sub">Ranked companions for your plant &#8212; best-attested first &#8212; and the neighbours worth avoiding.</p>
+      </div>
+    </div>
+
+    <div id="reasonFilter" class="pill-row" role="group" aria-label="Filter by benefit"><!-- B4: benefit pills --></div>
+
+    <!-- ink result panel: ranked good companions (filled by B3 renderCompanions) -->
+    <div id="companions" class="result"><!-- B3: ranked companion rows --></div>
+
+    <!-- amber antagonist panel: keep-apart list (filled by B3 renderAntagonists) -->
+    <div id="antagonists" class="antag"><!-- B3: keep-apart rows --></div>
+  </section>
+
+  <!-- 03 — WHY IT WORKS -->
+  <section id="why">
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <div>
+        <h2 class="sec-title">Why it works</h2>
+        <p class="sec-sub">Eight ways a neighbour earns its place &#8212; and how sure the lore is.</p>
+      </div>
+    </div>
+
+    <!-- reason taxonomy cards (filled by B4 Task 4.7) -->
+    <div id="reasonCards" class="nutrients"><!-- B4: one card per reason --></div>
+
+    <!-- confidence legend (static slot) -->
+    <div id="confLegend" class="conf-legend">
+      <span class="ci"><b>Well attested</b> &#8212; backed by trials or long, broad practice; shown first.</span>
+      <span class="ci"><b class="trad">Traditional&#160;~</b> &#8212; cottage-garden lore; sound but less firmly proven, so it&#8217;s flagged and ranked below.</span>
+    </div>
+  </section>
+  </main>
+
+  <footer>
+    <span>A general guide to companion planting &#8212; gardening lore varies by soil, season and source, so treat it as a friendly starting point, not a rule.</span>
+    <span class="sig">&#8212; plant in good company</span>
+  </footer>
+
+</div>
+
+<div class="vh" id="liveRegion" aria-live="polite" aria-atomic="true"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =====================================================================
+     DATA BLOCK — embedded from companion-planter.data.js (Phase B1) at
+     B3 Task 3.1. Single source of truth now lives here. Pure data:
+     REASONS (8-key taxonomy), FEEDS (deep-link coupling point — exact
+     fertilizer.html preset names), PLANTS (89), EDGES (179, stored once
+     per pair with a = alphabetically-first id; mirrored both ways below).
+     ===================================================================== */
+  var REASONS = [
+    { key:"pest",       label:"Repels pests",      accent:"vigour" },
+    { key:"trap",       label:"Trap crop",         accent:"vigour" },
+    { key:"pollinator", label:"Draws pollinators", accent:"bloom"  },
+    { key:"flavour",    label:"Improves flavour",  accent:"bloom"  },
+    { key:"nitrogen",   label:"Fixes nitrogen",    accent:"leaf"   },
+    { key:"mulch",      label:"Living mulch",      accent:"leaf"   },
+    { key:"support",    label:"Physical support",  accent:"stem"   },
+    { key:"shade",      label:"Shade / shelter",   accent:"stem"   }
+  ];
+
+  /* FEEDS — DEEP-LINK COUPLING POINT (keep in sync with fertilizer.html PRESETS). */
+  var FEEDS = [
+    "All-purpose balanced",
+    "Leafy greens & lawns",
+    "Tomato & vegetable",
+    "Rose & flower",
+    "Bulbs & roots",
+    "Gentle all-organic"
+  ];
+
+  var PLANTS = [
+    /* ---- VEGETABLES (cat:"veg") ---- */
+    { id:"tomato",         name:"Tomato",            latin:"Solanum lycopersicum",            cat:"veg", blurb:"The cottage plot's hungry star — thrives among basil and marigolds.", feed:"Tomato & vegetable" },
+    { id:"potato",         name:"Potato",            latin:"Solanum tuberosum",               cat:"veg", blurb:"Earthed-up tubers that resent their nightshade cousins close by.", feed:"Bulbs & roots" },
+    { id:"carrot",         name:"Carrot",            latin:"Daucus carota",                   cat:"veg", blurb:"Feathery tops betrayed to carrot fly — mask them among alliums.", feed:"Bulbs & roots" },
+    { id:"onion",          name:"Onion",             latin:"Allium cepa",                     cat:"veg", blurb:"Pungent allium that guards carrots but sulks beside beans.", feed:"Bulbs & roots" },
+    { id:"garlic",         name:"Garlic",            latin:"Allium sativum",                  cat:"veg", blurb:"A clove-by-clove pest ward — best kept clear of peas and beans.", feed:"Bulbs & roots" },
+    { id:"lettuce",        name:"Lettuce",           latin:"Lactuca sativa",                  cat:"veg", blurb:"Quick, tender leaves happy in the cool shade of taller crops.", feed:"Leafy greens & lawns" },
+    { id:"cabbage",        name:"Cabbage",           latin:"Brassica oleracea",               cat:"veg", aliases:["brassica"], blurb:"A heavy-headed brassica that loves aromatic herbs at its feet.", feed:"Leafy greens & lawns" },
+    { id:"broccoli",       name:"Broccoli",          latin:"Brassica oleracea var. italica",  cat:"veg", blurb:"Calabrese heads sweetened by chamomile and guarded by nasturtium.", feed:"Leafy greens & lawns" },
+    { id:"cucumber",       name:"Cucumber",          latin:"Cucumis sativus",                 cat:"veg", blurb:"A scrambling vine that climbs sunflowers and shrinks from sage.", feed:"Tomato & vegetable" },
+    { id:"courgette",      name:"Courgette",         latin:"Cucurbita pepo",                  cat:"veg", aliases:["zucchini","summer squash"], blurb:"Generous summer squash — borage brings bees to its golden flowers.", feed:"Tomato & vegetable" },
+    { id:"pea",            name:"Pea",               latin:"Pisum sativum",                   cat:"veg", blurb:"A climbing legume that feeds the soil with nitrogen as it grows.", feed:"Gentle all-organic" },
+    { id:"french-bean",    name:"French bean",       latin:"Phaseolus vulgaris",              cat:"veg", aliases:["green bean","dwarf bean","bush bean"], blurb:"Nitrogen-fixing bush bean — a Three Sisters mainstay.", feed:"Gentle all-organic" },
+    { id:"runner-bean",    name:"Runner bean",       latin:"Phaseolus coccineus",             cat:"veg", aliases:["pole bean","string bean"], blurb:"Scarlet-flowered climber that scorns onions but loves sweetcorn poles.", feed:"Gentle all-organic" },
+    { id:"beetroot",       name:"Beetroot",          latin:"Beta vulgaris",                   cat:"veg", aliases:["beet"], blurb:"Sweet roots and ruby leaves — keep climbing beans at a distance.", feed:"Bulbs & roots" },
+    { id:"radish",         name:"Radish",            latin:"Raphanus sativus",                cat:"veg", blurb:"Fast row-marker that lures flea beetle and beetle from its neighbours.", feed:"Bulbs & roots" },
+    { id:"spinach",        name:"Spinach",           latin:"Spinacia oleracea",               cat:"veg", blurb:"Cool-season leaf that carpets the ground beneath taller crops.", feed:"Leafy greens & lawns" },
+    { id:"kale",           name:"Kale",              latin:"Brassica oleracea var. sabellica",cat:"veg", blurb:"Hardy frilled brassica — nasturtium draws aphids away from its leaves.", feed:"Leafy greens & lawns" },
+    { id:"sweetcorn",      name:"Sweetcorn",         latin:"Zea mays",                        cat:"veg", aliases:["corn","maize"], blurb:"A living trellis for beans and a sun-screen for sprawling squash.", feed:"Leafy greens & lawns" },
+    { id:"pepper",         name:"Pepper",            latin:"Capsicum annuum",                 cat:"veg", aliases:["bell pepper","chilli","chili"], blurb:"Warmth-loving nightshade that takes well to basil's company.", feed:"Tomato & vegetable" },
+    { id:"squash",         name:"Squash",            latin:"Cucurbita maxima",                cat:"veg", aliases:["pumpkin","winter squash"], blurb:"Broad-leaved sprawler — the shading 'sister' to corn and beans.", feed:"Tomato & vegetable" },
+    { id:"leek",           name:"Leek",              latin:"Allium ampeloprasum",             cat:"veg", blurb:"Mild standing allium that confuses carrot fly all season.", feed:"Bulbs & roots" },
+    { id:"cauliflower",    name:"Cauliflower",       latin:"Brassica oleracea var. botrytis", cat:"veg", blurb:"A fussy brassica that rewards rich soil and herbal neighbours.", feed:"Leafy greens & lawns" },
+    { id:"brussels-sprout",name:"Brussels sprout",   latin:"Brassica oleracea var. gemmifera",cat:"veg", blurb:"Tall winter brassica studded with sprouts — stake it well.", feed:"Leafy greens & lawns" },
+    { id:"celery",         name:"Celery",            latin:"Apium graveolens",                cat:"veg", blurb:"Thirsty, aromatic stalks that pair kindly with leeks and brassicas.", feed:"All-purpose balanced" },
+    { id:"aubergine",      name:"Aubergine",         latin:"Solanum melongena",               cat:"veg", aliases:["eggplant"], blurb:"Glossy nightshade fruit — beans help keep its beetles at bay.", feed:"Tomato & vegetable" },
+    { id:"turnip",         name:"Turnip",            latin:"Brassica rapa",                   cat:"veg", blurb:"Swift brassica root that follows a nitrogen-fixing pea crop well.", feed:"Bulbs & roots" },
+    { id:"parsnip",        name:"Parsnip",           latin:"Pastinaca sativa",                cat:"veg", blurb:"Long sweet root, all the sweeter after frost; flowers feed beneficials.", feed:"Bulbs & roots" },
+    { id:"chard",          name:"Chard",             latin:"Beta vulgaris subsp. cicla",      cat:"veg", aliases:["swiss chard","silverbeet"], blurb:"Rainbow-stemmed leaf — a cut-and-come-again beside beans.", feed:"Leafy greens & lawns" },
+    { id:"asparagus",      name:"Asparagus",         latin:"Asparagus officinalis",           cat:"veg", blurb:"A perennial spear bed that shelters tomatoes and shuns onions.", feed:"All-purpose balanced" },
+
+    /* ---- HERBS (cat:"herb") ---- */
+    { id:"basil",          name:"Basil",             latin:"Ocimum basilicum",                cat:"herb", blurb:"Tomato's classic partner — scent that muddles thrips and flies.", feed:"Gentle all-organic" },
+    { id:"parsley",        name:"Parsley",           latin:"Petroselinum crispum",            cat:"herb", blurb:"When left to flower, a beacon for hoverflies and parasitic wasps.", feed:"Gentle all-organic" },
+    { id:"dill",           name:"Dill",              latin:"Anethum graveolens",              cat:"herb", blurb:"Lacy umbels that draw beneficials — but never near carrots.", feed:"Gentle all-organic" },
+    { id:"coriander",      name:"Coriander",         latin:"Coriandrum sativum",              cat:"herb", aliases:["cilantro"], blurb:"Quick-bolting umbel whose flowers summon aphid predators.", feed:"Gentle all-organic" },
+    { id:"mint",           name:"Mint",              latin:"Mentha",                          cat:"herb", blurb:"A pungent cabbage-moth deterrent — best sunk in a pot to contain.", feed:"Gentle all-organic" },
+    { id:"oregano",        name:"Oregano",           latin:"Origanum vulgare",                cat:"herb", blurb:"Low aromatic mat that flowers for pollinators and ground-shades.", feed:"Gentle all-organic" },
+    { id:"thyme",          name:"Thyme",             latin:"Thymus vulgaris",                 cat:"herb", blurb:"Creeping, bee-loved carpet said to turn cabbage worm away.", feed:"Gentle all-organic" },
+    { id:"rosemary",       name:"Rosemary",          latin:"Salvia rosmarinus",               cat:"herb", blurb:"Resinous evergreen whose scent unsettles bean beetle and carrot fly.", feed:"Gentle all-organic" },
+    { id:"sage",           name:"Sage",              latin:"Salvia officinalis",              cat:"herb", blurb:"Grey-leaved guardian of brassicas — yet hard on cucumbers.", feed:"Gentle all-organic" },
+    { id:"chives",         name:"Chives",            latin:"Allium schoenoprasum",            cat:"herb", blurb:"Edible-flowered allium that wards aphids and apple scab alike.", feed:"Gentle all-organic" },
+    { id:"fennel",         name:"Fennel",            latin:"Foeniculum vulgare",              cat:"herb", blurb:"Aniseed loner — it inhibits most neighbours, so give it its own bed.", feed:"Gentle all-organic" },
+    { id:"borage",         name:"Borage",            latin:"Borago officinalis",              cat:"herb", blurb:"Star-flowered bee plant that strengthens strawberries and squash.", feed:"Gentle all-organic" },
+    { id:"chamomile",      name:"Chamomile",         latin:"Matricaria chamomilla",           cat:"herb", blurb:"The 'plant's physician' — said to sweeten onions and brassicas.", feed:"Gentle all-organic" },
+    { id:"tarragon",       name:"Tarragon",          latin:"Artemisia dracunculus",           cat:"herb", blurb:"Aromatic French herb reputed to improve most of its neighbours.", feed:"Gentle all-organic" },
+    { id:"lemon-balm",     name:"Lemon balm",        latin:"Melissa officinalis",             cat:"herb", blurb:"Lemony mint-relative humming with bees — contain its roots.", feed:"Gentle all-organic" },
+    { id:"lavender",       name:"Lavender",          latin:"Lavandula angustifolia",          cat:"herb", blurb:"Silver, fragrant and full of bees — moths and aphids keep away.", feed:"Gentle all-organic" },
+    { id:"summer-savory",  name:"Summer savory",     latin:"Satureja hortensis",              cat:"herb", blurb:"The 'bean herb' — sharpens their flavour and turns bean beetle aside.", feed:"Gentle all-organic" },
+    { id:"catnip",         name:"Catnip",            latin:"Nepeta cataria",                  cat:"herb", aliases:["catmint"], blurb:"Cat-pleasing mint whose scent routs flea beetle and aphids.", feed:"Gentle all-organic" },
+    { id:"marjoram",       name:"Marjoram",          latin:"Origanum majorana",               cat:"herb", blurb:"Sweet oregano cousin — a flavour-lifter and pollinator draw.", feed:"Gentle all-organic" },
+
+    /* ---- FLOWERS (cat:"flower") ---- */
+    { id:"french-marigold",name:"French marigold",   latin:"Tagetes patula",                  cat:"flower", aliases:["tagetes"], blurb:"The workhorse companion — roots fight nematodes, scent fights whitefly.", feed:"Rose & flower" },
+    { id:"calendula",      name:"Calendula",         latin:"Calendula officinalis",           cat:"flower", aliases:["pot marigold"], blurb:"Cheerful pot marigold — sticky aphid trap and pollinator buffet.", feed:"Rose & flower" },
+    { id:"nasturtium",     name:"Nasturtium",        latin:"Tropaeolum majus",                cat:"flower", blurb:"The great sacrificial trap — aphids and caterpillars flock to it.", feed:"Gentle all-organic" },
+    { id:"sunflower",      name:"Sunflower",         latin:"Helianthus annuus",               cat:"flower", blurb:"Towering living trellis and pollinator landmark — but hard on potatoes.", feed:"All-purpose balanced" },
+    { id:"cosmos",         name:"Cosmos",            latin:"Cosmos bipinnatus",               cat:"flower", blurb:"Airy daisy that calls in lacewings and hoverflies all summer.", feed:"Rose & flower" },
+    { id:"zinnia",         name:"Zinnia",            latin:"Zinnia elegans",                  cat:"flower", blurb:"Hot-coloured nectar bar for butterflies and predatory wasps.", feed:"Rose & flower" },
+    { id:"sweet-pea",      name:"Sweet pea",         latin:"Lathyrus odoratus",               cat:"flower", blurb:"Scented climbing legume — ornament that also feeds the soil.", feed:"Rose & flower" },
+    { id:"foxglove",       name:"Foxglove",          latin:"Digitalis purpurea",              cat:"flower", blurb:"Cottage-border spire beloved of bumblebees; folklore favours its roots.", feed:"Rose & flower" },
+    { id:"hollyhock",      name:"Hollyhock",         latin:"Alcea rosea",                     cat:"flower", blurb:"Stately back-of-border bloom that pulls pollinators sky-high.", feed:"Rose & flower" },
+    { id:"poppy",          name:"Poppy",             latin:"Papaver rhoeas",                  cat:"flower", blurb:"Silken field poppy whose pollen feeds early bees and beetles.", feed:"Rose & flower" },
+    { id:"cornflower",     name:"Cornflower",        latin:"Centaurea cyanus",                cat:"flower", aliases:["bachelor's button"], blurb:"True-blue meadow flower rich in nectar for beneficial insects.", feed:"Rose & flower" },
+    { id:"lupin",          name:"Lupin",             latin:"Lupinus",                         cat:"flower", aliases:["lupine"], blurb:"Nitrogen-fixing spire — a flowering green manure for the border.", feed:"Rose & flower" },
+    { id:"dahlia",         name:"Dahlia",            latin:"Dahlia pinnata",                  cat:"flower", blurb:"Late-season showpiece — ring it with nasturtium to spare it aphids.", feed:"Rose & flower" },
+    { id:"aster",          name:"Aster",             latin:"Symphyotrichum",                  cat:"flower", aliases:["michaelmas daisy"], blurb:"Autumn daisy that keeps pollinators fed when little else flowers.", feed:"Rose & flower" },
+    { id:"snapdragon",     name:"Snapdragon",        latin:"Antirrhinum majus",               cat:"flower", blurb:"Hinged blooms that only stout bumblebees can prise open.", feed:"Rose & flower" },
+    { id:"alyssum",        name:"Sweet alyssum",     latin:"Lobularia maritima",              cat:"flower", aliases:["sweet alyssum"], blurb:"Honey-scented carpet — living mulch and a magnet for hoverflies.", feed:"Rose & flower" },
+    { id:"phacelia",       name:"Phacelia",          latin:"Phacelia tanacetifolia",          cat:"flower", aliases:["fiddleneck"], blurb:"One of the finest bee plants — a green-manure and pollinator lure.", feed:"Gentle all-organic" },
+    { id:"petunia",        name:"Petunia",           latin:"Petunia × atkinsiana",            cat:"flower", blurb:"Trumpet bedder said to repel aphids, leafhoppers and bean beetle.", feed:"Rose & flower" },
+    { id:"geranium",       name:"Geranium",          latin:"Pelargonium",                     cat:"flower", aliases:["pelargonium"], blurb:"Scented bedding geranium reputed to confound beetles and worms.", feed:"Rose & flower" },
+    { id:"yarrow",         name:"Yarrow",            latin:"Achillea millefolium",            cat:"flower", blurb:"Flat-topped landing pad for ladybirds, wasps and hoverflies.", feed:"Gentle all-organic" },
+    { id:"echinacea",      name:"Echinacea",         latin:"Echinacea purpurea",              cat:"flower", aliases:["coneflower"], blurb:"Sturdy prairie coneflower that hums with bees and butterflies.", feed:"Rose & flower" },
+    { id:"bee-balm",       name:"Bee balm",          latin:"Monarda didyma",                  cat:"flower", aliases:["bergamot","monarda"], blurb:"Shaggy mint-family bloom — a banquet for bees and hummingbirds.", feed:"Rose & flower" },
+    { id:"cleome",         name:"Cleome",            latin:"Cleome hassleriana",              cat:"flower", aliases:["spider flower"], blurb:"Spidery night-scented bloom drawing dusk pollinators and bees.", feed:"Rose & flower" },
+    { id:"tithonia",       name:"Tithonia",          latin:"Tithonia rotundifolia",           cat:"flower", aliases:["mexican sunflower"], blurb:"Fiery Mexican sunflower — a beacon for butterflies and wasps.", feed:"Rose & flower" },
+
+    /* ---- FRUIT (cat:"fruit") ---- */
+    { id:"strawberry",     name:"Strawberry",        latin:"Fragaria × ananassa",             cat:"fruit", blurb:"Sprawling ground fruit — borage at its side strengthens the crop.", feed:"All-purpose balanced" },
+    { id:"raspberry",      name:"Raspberry",         latin:"Rubus idaeus",                    cat:"fruit", blurb:"Summer-caning bramble — a clove of garlic nearby wards its pests.", feed:"All-purpose balanced" },
+    { id:"blackberry",     name:"Blackberry",        latin:"Rubus fruticosus",                cat:"fruit", blurb:"Vigorous hedgerow cane sweetened by bees the borage brings.", feed:"All-purpose balanced" },
+    { id:"blueberry",      name:"Blueberry",         latin:"Vaccinium corymbosum",            cat:"fruit", blurb:"Acid-loving bush happiest under a thyme-mulched, lime-free soil.", feed:"Gentle all-organic" },
+    { id:"apple",          name:"Apple",             latin:"Malus domestica",                 cat:"fruit", blurb:"Orchard mainstay — chives at the trunk are said to fend off scab.", feed:"All-purpose balanced" },
+    { id:"pear",           name:"Pear",              latin:"Pyrus communis",                  cat:"fruit", blurb:"Long-lived orchard tree — nasturtium lures its codling moth aside.", feed:"All-purpose balanced" },
+    { id:"plum",           name:"Plum",              latin:"Prunus domestica",                cat:"fruit", blurb:"Spring-blossoming stone fruit — alliums help keep aphids down.", feed:"All-purpose balanced" },
+    { id:"cherry",         name:"Cherry",            latin:"Prunus avium",                    cat:"fruit", blurb:"Blossom-laden tree — chives and nasturtium soften its pest load.", feed:"All-purpose balanced" },
+    { id:"grape",          name:"Grape",             latin:"Vitis vinifera",                  cat:"fruit", aliases:["grapevine"], blurb:"Sun-trained vine said to grow sweeter with geraniums at its feet.", feed:"All-purpose balanced" },
+    { id:"gooseberry",     name:"Gooseberry",        latin:"Ribes uva-crispa",                cat:"fruit", blurb:"Thorny dessert bush — chives nearby discourage its sawfly.", feed:"All-purpose balanced" },
+    { id:"blackcurrant",   name:"Blackcurrant",      latin:"Ribes nigrum",                    cat:"fruit", blurb:"Aromatic berry bush brightened by allium guards against aphids.", feed:"All-purpose balanced" },
+    { id:"redcurrant",     name:"Redcurrant",        latin:"Ribes rubrum",                    cat:"fruit", blurb:"Jewel-stringed currant — chives help shield it from sawfly.", feed:"All-purpose balanced" },
+    { id:"rhubarb",        name:"Rhubarb",           latin:"Rheum rhabarbarum",               cat:"fruit", blurb:"Bold-leaved perennial — its leaves are folk medicine for brassicas.", feed:"Leafy greens & lawns" },
+    { id:"fig",            name:"Fig",               latin:"Ficus carica",                    cat:"fruit", blurb:"Mediterranean tree that keeps good company with lavender and herbs.", feed:"All-purpose balanced" },
+    { id:"melon",          name:"Melon",             latin:"Cucumis melo",                    cat:"fruit", blurb:"Heat-loving trailing fruit — marigold and nasturtium see off its pests.", feed:"Tomato & vegetable" },
+    { id:"quince",         name:"Quince",            latin:"Cydonia oblonga",                 cat:"fruit", blurb:"Fragrant old-orchard fruit — nasturtium draws its pests away.", feed:"All-purpose balanced" },
+    { id:"elderberry",     name:"Elderberry",        latin:"Sambucus nigra",                  cat:"fruit", blurb:"Hedgerow elder whose froth of bloom feeds clouds of beneficials.", feed:"All-purpose balanced" }
+  ];
+  /* PLANTS total: 89 (veg 29 + herb 19 + flower 24 + fruit 17) */
+
+  var EDGES = [
+    /* ===== GOOD COMPANIONS (rel:"good") ===== */
+    /* tomato guild */
+    { a:"basil", b:"tomato", rel:"good", reasons:["pest","flavour"], conf:"strong", w:2 },
+    { a:"basil", b:"pepper", rel:"good", reasons:["pest","flavour"], conf:"traditional" },
+    { a:"asparagus", b:"basil", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"asparagus", b:"tomato", rel:"good", reasons:["pest"], conf:"strong", w:1 },
+    { a:"asparagus", b:"parsley", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"parsley", b:"tomato", rel:"good", reasons:["pollinator","pest"], conf:"traditional" },
+
+    /* carrot & alliums */
+    { a:"carrot", b:"onion", rel:"good", reasons:["pest"], conf:"strong", w:2 },
+    { a:"carrot", b:"leek", rel:"good", reasons:["pest"], conf:"strong", w:1 },
+    { a:"carrot", b:"chives", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"carrot", b:"rosemary", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"carrot", b:"sage", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"carrot", b:"pea", rel:"good", reasons:["nitrogen"], conf:"traditional" },
+    { a:"carrot", b:"lettuce", rel:"good", reasons:["mulch"], conf:"traditional" },
+    { a:"carrot", b:"radish", rel:"good", reasons:["mulch"], conf:"traditional" },
+
+    /* marigold pest control */
+    { a:"french-marigold", b:"tomato", rel:"good", reasons:["pest"], conf:"strong", w:2 },
+    { a:"french-marigold", b:"potato", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"french-bean", b:"french-marigold", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"cucumber", b:"french-marigold", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"french-marigold", b:"squash", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"courgette", b:"french-marigold", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"french-marigold", b:"melon", rel:"good", reasons:["pest"], conf:"traditional" },
+
+    /* the Three Sisters */
+    { a:"french-bean", b:"sweetcorn", rel:"good", reasons:["nitrogen","support"], conf:"strong", w:3 },
+    { a:"squash", b:"sweetcorn", rel:"good", reasons:["mulch","shade"], conf:"strong", w:2 },
+    { a:"french-bean", b:"squash", rel:"good", reasons:["nitrogen"], conf:"strong", w:2 },
+    { a:"runner-bean", b:"sweetcorn", rel:"good", reasons:["nitrogen","support"], conf:"strong", w:2 },
+
+    /* nasturtium as trap crop */
+    { a:"nasturtium", b:"tomato", rel:"good", reasons:["trap"], conf:"traditional" },
+    { a:"cabbage", b:"nasturtium", rel:"good", reasons:["trap"], conf:"strong", w:1 },
+    { a:"cucumber", b:"nasturtium", rel:"good", reasons:["trap","pollinator"], conf:"traditional" },
+    { a:"broccoli", b:"nasturtium", rel:"good", reasons:["trap"], conf:"traditional" },
+    { a:"kale", b:"nasturtium", rel:"good", reasons:["trap"], conf:"traditional" },
+    { a:"cauliflower", b:"nasturtium", rel:"good", reasons:["trap"], conf:"traditional" },
+    { a:"brussels-sprout", b:"nasturtium", rel:"good", reasons:["trap"], conf:"traditional" },
+    { a:"apple", b:"nasturtium", rel:"good", reasons:["trap","pest"], conf:"traditional" },
+    { a:"dahlia", b:"nasturtium", rel:"good", reasons:["trap"], conf:"traditional" },
+    { a:"courgette", b:"nasturtium", rel:"good", reasons:["trap"], conf:"traditional" },
+    { a:"melon", b:"nasturtium", rel:"good", reasons:["trap"], conf:"traditional" },
+
+    /* radish trap & row companions */
+    { a:"cucumber", b:"radish", rel:"good", reasons:["trap"], conf:"traditional" },
+    { a:"pea", b:"radish", rel:"good", reasons:["nitrogen"], conf:"traditional" },
+    { a:"radish", b:"spinach", rel:"good", reasons:["mulch"], conf:"traditional" },
+    { a:"parsnip", b:"radish", rel:"good", reasons:["mulch"], conf:"traditional" },
+
+    /* brassicas & aromatic herbs */
+    { a:"cabbage", b:"dill", rel:"good", reasons:["pest","pollinator"], conf:"traditional" },
+    { a:"cabbage", b:"thyme", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"cabbage", b:"sage", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"cabbage", b:"mint", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"cabbage", b:"chamomile", rel:"good", reasons:["flavour"], conf:"traditional" },
+    { a:"cabbage", b:"rosemary", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"cabbage", b:"lavender", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"cabbage", b:"catnip", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"cabbage", b:"geranium", rel:"good", reasons:["trap"], conf:"traditional" },
+    { a:"cabbage", b:"celery", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"cabbage", b:"phacelia", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"broccoli", b:"dill", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"broccoli", b:"chamomile", rel:"good", reasons:["flavour"], conf:"traditional" },
+    { a:"broccoli", b:"rosemary", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"cauliflower", b:"dill", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"cauliflower", b:"celery", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"brussels-sprout", b:"dill", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"dill", b:"kale", rel:"good", reasons:["pollinator"], conf:"traditional" },
+
+    /* onion / allium companions */
+    { a:"beetroot", b:"onion", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"lettuce", b:"onion", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"chamomile", b:"onion", rel:"good", reasons:["flavour"], conf:"traditional" },
+    { a:"onion", b:"summer-savory", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"chard", b:"onion", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"onion", b:"pepper", rel:"good", reasons:["pest"], conf:"traditional" },
+
+    /* borage the bee plant */
+    { a:"borage", b:"strawberry", rel:"good", reasons:["pollinator","pest"], conf:"strong", w:1 },
+    { a:"borage", b:"tomato", rel:"good", reasons:["pollinator","pest"], conf:"traditional" },
+    { a:"borage", b:"squash", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"borage", b:"courgette", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"blackberry", b:"borage", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"borage", b:"melon", rel:"good", reasons:["pollinator"], conf:"traditional" },
+
+    /* legumes feeding the soil */
+    { a:"french-bean", b:"potato", rel:"good", reasons:["pest","nitrogen"], conf:"traditional" },
+    { a:"cucumber", b:"pea", rel:"good", reasons:["nitrogen"], conf:"traditional" },
+    { a:"pea", b:"sweetcorn", rel:"good", reasons:["nitrogen","support"], conf:"traditional" },
+    { a:"parsnip", b:"pea", rel:"good", reasons:["nitrogen"], conf:"traditional" },
+    { a:"pea", b:"turnip", rel:"good", reasons:["nitrogen"], conf:"traditional" },
+    { a:"chard", b:"french-bean", rel:"good", reasons:["nitrogen"], conf:"traditional" },
+    { a:"courgette", b:"french-bean", rel:"good", reasons:["nitrogen"], conf:"traditional" },
+    { a:"apple", b:"lupin", rel:"good", reasons:["nitrogen"], conf:"traditional" },
+    { a:"lupin", b:"potato", rel:"good", reasons:["nitrogen"], conf:"traditional" },
+    { a:"sunflower", b:"sweet-pea", rel:"good", reasons:["nitrogen","support"], conf:"traditional" },
+
+    /* herbs & their charges */
+    { a:"french-bean", b:"summer-savory", rel:"good", reasons:["pest","flavour"], conf:"traditional" },
+    { a:"french-bean", b:"rosemary", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"rosemary", b:"sage", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"mint", b:"tomato", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"tarragon", b:"tomato", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"cucumber", b:"oregano", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"oregano", b:"squash", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"lemon-balm", b:"tomato", rel:"good", reasons:["pollinator","flavour"], conf:"traditional" },
+    { a:"lemon-balm", b:"squash", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"marjoram", b:"squash", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"aubergine", b:"marjoram", rel:"good", reasons:["flavour"], conf:"traditional" },
+    { a:"aubergine", b:"catnip", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"aubergine", b:"tarragon", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"aubergine", b:"french-bean", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"coriander", b:"pepper", rel:"good", reasons:["pest","pollinator"], conf:"traditional" },
+    { a:"coriander", b:"spinach", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"celery", b:"leek", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"dill", b:"lettuce", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"cucumber", b:"dill", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"chamomile", b:"cucumber", rel:"good", reasons:["pollinator"], conf:"traditional" },
+
+    /* flowers calling in pollinators & predators */
+    { a:"calendula", b:"tomato", rel:"good", reasons:["trap","pollinator"], conf:"strong", w:1 },
+    { a:"asparagus", b:"calendula", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"cosmos", b:"tomato", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"cucumber", b:"sunflower", rel:"good", reasons:["support","pollinator"], conf:"traditional" },
+    { a:"alyssum", b:"lettuce", rel:"good", reasons:["pollinator","mulch"], conf:"traditional" },
+    { a:"phacelia", b:"tomato", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"bee-balm", b:"tomato", rel:"good", reasons:["pollinator","flavour"], conf:"traditional" },
+    { a:"tomato", b:"yarrow", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"apple", b:"yarrow", rel:"good", reasons:["pollinator","pest"], conf:"traditional" },
+    { a:"echinacea", b:"squash", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"cornflower", b:"cucumber", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"cornflower", b:"tomato", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"poppy", b:"squash", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"cucumber", b:"zinnia", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"tomato", b:"zinnia", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"aster", b:"squash", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"squash", b:"tithonia", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"tithonia", b:"tomato", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"cleome", b:"cucumber", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"cucumber", b:"hollyhock", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"french-bean", b:"snapdragon", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"french-bean", b:"petunia", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"apple", b:"foxglove", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"foxglove", b:"potato", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"cosmos", b:"parsnip", rel:"good", reasons:["pollinator"], conf:"traditional" },
+
+    /* fruit companions */
+    { a:"lettuce", b:"strawberry", rel:"good", reasons:["mulch"], conf:"traditional" },
+    { a:"spinach", b:"strawberry", rel:"good", reasons:["mulch"], conf:"traditional" },
+    { a:"strawberry", b:"thyme", rel:"good", reasons:["pest","mulch"], conf:"traditional" },
+    { a:"blueberry", b:"thyme", rel:"good", reasons:["mulch"], conf:"traditional" },
+    { a:"garlic", b:"raspberry", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"apple", b:"chives", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"apple", b:"garlic", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"blackberry", b:"chives", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"chives", b:"pear", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"nasturtium", b:"pear", rel:"good", reasons:["trap","pest"], conf:"traditional" },
+    { a:"garlic", b:"plum", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"chives", b:"plum", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"cherry", b:"chives", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"cherry", b:"nasturtium", rel:"good", reasons:["trap"], conf:"traditional" },
+    { a:"chives", b:"gooseberry", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"gooseberry", b:"tomato", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"blackcurrant", b:"chives", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"chives", b:"redcurrant", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"geranium", b:"grape", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"cabbage", b:"rhubarb", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"fig", b:"lavender", rel:"good", reasons:["pollinator"], conf:"traditional" },
+    { a:"melon", b:"sweetcorn", rel:"good", reasons:["shade"], conf:"traditional" },
+    { a:"cabbage", b:"elderberry", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"chives", b:"quince", rel:"good", reasons:["pest"], conf:"traditional" },
+    { a:"nasturtium", b:"quince", rel:"good", reasons:["trap"], conf:"traditional" },
+    { a:"apple", b:"elderberry", rel:"good", reasons:["pollinator"], conf:"traditional" },
+
+    /* ===== ANTAGONISTS (rel:"bad") ===== */
+    /* fennel the loner */
+    { a:"fennel", b:"tomato", rel:"bad", conf:"strong", note:"Fennel secretes growth-inhibiting compounds — keep it well away from most vegetables." },
+    { a:"fennel", b:"french-bean", rel:"bad", conf:"strong", note:"Fennel inhibits bean growth; give it its own corner of the garden." },
+    { a:"fennel", b:"runner-bean", rel:"bad", conf:"strong", note:"Fennel stunts climbing beans — grow it well apart." },
+    { a:"cabbage", b:"fennel", rel:"bad", conf:"strong", note:"Fennel suppresses brassicas; plant it elsewhere." },
+    { a:"fennel", b:"pepper", rel:"bad", conf:"traditional", note:"Fennel inhibits most nightshades, peppers included." },
+    { a:"coriander", b:"fennel", rel:"bad", conf:"traditional", note:"Fennel and coriander cross and sulk together — separate them." },
+    { a:"dill", b:"fennel", rel:"bad", conf:"traditional", note:"Fennel and dill cross-pollinate, spoiling both seed lines." },
+
+    /* nightshade blight & competition */
+    { a:"potato", b:"tomato", rel:"bad", conf:"strong", note:"Both are blight-prone nightshades — separating them slows disease." },
+    { a:"cucumber", b:"potato", rel:"bad", conf:"traditional", note:"Potatoes raise blight risk and compete heavily with cucumbers." },
+    { a:"potato", b:"squash", rel:"bad", conf:"traditional", note:"Two heavy feeders that compete and share blight; keep apart." },
+    { a:"potato", b:"sunflower", rel:"bad", conf:"traditional", note:"Sunflowers release growth-inhibiting compounds that stunt potatoes." },
+
+    /* alliums vs legumes */
+    { a:"french-bean", b:"onion", rel:"bad", conf:"traditional", note:"Onions and other alliums stunt beans and peas." },
+    { a:"french-bean", b:"garlic", rel:"bad", conf:"traditional", note:"Garlic inhibits legume growth — keep beans away." },
+    { a:"garlic", b:"pea", rel:"bad", conf:"traditional", note:"Garlic and onions stunt peas." },
+    { a:"onion", b:"pea", rel:"bad", conf:"traditional", note:"Alliums inhibit pea growth." },
+    { a:"onion", b:"runner-bean", rel:"bad", conf:"traditional", note:"Onions stunt climbing beans." },
+    { a:"garlic", b:"runner-bean", rel:"bad", conf:"traditional", note:"Garlic inhibits bean growth." },
+    { a:"asparagus", b:"garlic", rel:"bad", conf:"traditional", note:"Alliums inhibit asparagus crowns." },
+    { a:"asparagus", b:"onion", rel:"bad", conf:"traditional", note:"Onions stunt establishing asparagus." },
+
+    /* brassica & strawberry rivalry */
+    { a:"cabbage", b:"strawberry", rel:"bad", conf:"traditional", note:"Brassicas and strawberries compete and share pests." },
+    { a:"broccoli", b:"strawberry", rel:"bad", conf:"traditional", note:"Brassicas suppress strawberry vigour." },
+    { a:"kale", b:"strawberry", rel:"bad", conf:"traditional", note:"Brassicas and strawberries make poor neighbours." },
+
+    /* assorted documented clashes */
+    { a:"carrot", b:"dill", rel:"bad", conf:"traditional", note:"Mature dill stunts carrots and can cross with their flowers." },
+    { a:"sweetcorn", b:"tomato", rel:"bad", conf:"traditional", note:"Corn earworm and tomato fruitworm are one pest — separating them slows it." },
+    { a:"cabbage", b:"tomato", rel:"bad", conf:"traditional", note:"Tomatoes and brassicas compete heavily; keep them apart." },
+    { a:"cucumber", b:"sage", rel:"bad", conf:"traditional", note:"Strongly aromatic sage can stunt cucumbers." },
+    { a:"beetroot", b:"runner-bean", rel:"bad", conf:"traditional", note:"Climbing beans and beetroot stunt one another." },
+    { a:"french-bean", b:"sunflower", rel:"bad", conf:"traditional", note:"Sunflowers can inhibit bean growth." }
+  ];
+  /* EDGES total: 179 (good 151 + bad 28); every plant has >=1 edge (verified B1 Task 1.11) */
+
+  /* ===================================================================
+     HELPERS (mirrored from fertilizer.html idioms)
+     =================================================================== */
+  var $ = function(id){ return document.getElementById(id); };
+  var mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var prefersReduced = mq.matches;
+  if(mq.addEventListener){ mq.addEventListener("change", function(e){ prefersReduced = e.matches; }); }
+
+  function svgEl(tag, attrs){
+    var e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for(var k in attrs){ e.setAttribute(k, attrs[k]); }
+    return e;
+  }
+
+  /* category short labels (pills) and full labels (rows/cards) */
+  var CATS = [
+    { key:"all",    label:"All"    },
+    { key:"veg",    label:"Veg"    },
+    { key:"herb",   label:"Herb"   },
+    { key:"flower", label:"Flower" },
+    { key:"fruit",  label:"Fruit"  }
+  ];
+  var CAT_LABEL = { veg:"Vegetable", herb:"Herb", flower:"Flower", fruit:"Fruit" };
+
+  /* ===================================================================
+     INDICES (Task 3.1) — built once from the data literals above.
+     EDGES are stored once per pair; push each to BOTH endpoints so the
+     symmetric data becomes a bidirectional adjacency lookup.
+     =================================================================== */
+  var BY_ID = {};
+  for(var pi=0; pi<PLANTS.length; pi++){ BY_ID[PLANTS[pi].id] = PLANTS[pi]; }
+
+  var REASON_BY_KEY = {};
+  for(var ki=0; ki<REASONS.length; ki++){ REASON_BY_KEY[REASONS[ki].key] = REASONS[ki]; }
+
+  var ADJ = {};
+  for(var ei=0; ei<EDGES.length; ei++){
+    var ed = EDGES[ei];
+    if(!ADJ[ed.a]){ ADJ[ed.a] = []; }
+    if(!ADJ[ed.b]){ ADJ[ed.b] = []; }
+    ADJ[ed.a].push(ed);
+    ADJ[ed.b].push(ed);
+  }
+
+  /* ===================================================================
+     DERIVE — pure, side-effect-free functions (Task 3.2)
+     =================================================================== */
+  function rankScore(edge){
+    var conf = edge.conf === "strong" ? 2 : 1;
+    var reasons = edge.reasons ? edge.reasons.length : 0;
+    return conf*10 + reasons + (edge.w||0);
+  }
+  function otherId(edge, id){ return edge.a === id ? edge.b : edge.a; }
+
+  function companionsFor(id){
+    var list = ADJ[id] || [], out = [];
+    for(var i=0; i<list.length; i++){
+      var e = list[i];
+      if(e.rel !== "good"){ continue; }
+      var plant = BY_ID[otherId(e, id)];
+      if(!plant){ continue; }
+      out.push({ plant:plant, edge:e, score:rankScore(e) });
+    }
+    out.sort(function(x,y){
+      if(y.score !== x.score){ return y.score - x.score; }
+      return x.plant.name.localeCompare(y.plant.name);
+    });
+    return out;
+  }
+
+  function antagonistsFor(id){
+    var list = ADJ[id] || [], out = [];
+    for(var i=0; i<list.length; i++){
+      var e = list[i];
+      if(e.rel !== "bad"){ continue; }
+      var plant = BY_ID[otherId(e, id)];
+      if(!plant){ continue; }
+      out.push({ plant:plant, edge:e });
+    }
+    out.sort(function(x,y){ return x.plant.name.localeCompare(y.plant.name); });
+    return out;
+  }
+
+  function searchPlants(q, cat){
+    q = (q||"").trim().toLowerCase();
+    var out = [];
+    for(var i=0; i<PLANTS.length; i++){
+      var pl = PLANTS[i];
+      if(cat && cat !== "all" && pl.cat !== cat){ continue; }
+      if(q){
+        var match = pl.name.toLowerCase().indexOf(q) !== -1;
+        if(!match && pl.latin){ match = pl.latin.toLowerCase().indexOf(q) !== -1; }
+        if(!match && pl.aliases){
+          for(var a=0; a<pl.aliases.length; a++){
+            if(pl.aliases[a].toLowerCase().indexOf(q) !== -1){ match = true; break; }
+          }
+        }
+        if(!match){ continue; }
+      }
+      out.push(pl);
+    }
+    out.sort(function(x,y){ return x.name.localeCompare(y.name); });
+    return out;
+  }
+
+  function filterByReason(companions, reasonKey){
+    if(!reasonKey){ return companions; }
+    return companions.filter(function(c){
+      return c.edge.reasons && c.edge.reasons.indexOf(reasonKey) !== -1;
+    });
+  }
+
+  /* ===================================================================
+     STATE + RENDER ORCHESTRATOR (Task 3.3)
+     =================================================================== */
+  var DEFAULTS = { sel:"tomato", cat:"all", reason:null, q:"" };
+  var state = Object.assign({}, DEFAULTS);
+  var renderedSel = null;   // tracks the last selection so we only announce/animate on change
+
+  function render(){
+    // derive once per render and thread through — avoids recomputing companions/antagonists
+    var plant = BY_ID[state.sel] || BY_ID[DEFAULTS.sel];
+    var comps = companionsFor(plant.id);
+    var ants  = antagonistsFor(plant.id);
+    renderList();
+    renderPlate();
+    renderReasonFilter(comps);      // before companions: drops a stale benefit filter first
+    renderCompanions(comps);
+    renderAntagonists(ants);
+    if(state.sel !== renderedSel){
+      announce(plant, comps.length, ants.length);
+    }
+    renderedSel = state.sel;
+    saveState();
+  }
+
+  /* ===================================================================
+     BENEFIT / REASON FILTER (Task 4.1)
+     =================================================================== */
+  function reasonPill(key, label, accent){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "pill" + (state.reason === key ? " pill-active" : "");
+    b.setAttribute("aria-pressed", state.reason === key ? "true" : "false");
+    if(accent){
+      var dot = document.createElement("span");
+      dot.className = "pill-dot";
+      dot.setAttribute("aria-hidden", "true");
+      dot.style.background = "var(--" + accent + ")";
+      b.appendChild(dot);
+    }
+    b.appendChild(document.createTextNode(label));
+    b.addEventListener("click", function(){ state.reason = key; render(); });
+    return b;
+  }
+
+  function renderReasonFilter(comps){
+    var box = $("reasonFilter");
+    while(box.firstChild){ box.removeChild(box.firstChild); }
+
+    // collect the reasons actually present among this plant's good companions
+    var present = {};
+    for(var i=0; i<comps.length; i++){
+      var rs = comps[i].edge.reasons || [];
+      for(var j=0; j<rs.length; j++){ present[rs[j]] = true; }
+    }
+    // a stale/foreign reason for this plant falls back to "all benefits"
+    if(state.reason && !present[state.reason]){ state.reason = null; }
+
+    // hide the filter row entirely when the plant has no good companions
+    if(comps.length === 0){ box.style.display = "none"; return; }
+    box.style.display = "";
+
+    box.appendChild(reasonPill(null, "All benefits", null));
+    for(var k=0; k<REASONS.length; k++){
+      if(present[REASONS[k].key]){
+        box.appendChild(reasonPill(REASONS[k].key, REASONS[k].label, REASONS[k].accent));
+      }
+    }
+  }
+
+  /* ===================================================================
+     STATE PERSISTENCE (Tasks 4.2 / 4.3) — URL hash + localStorage
+     =================================================================== */
+  var VALID_CAT = { veg:true, herb:true, flower:true, fruit:true };
+
+  function serialize(){
+    var p = new URLSearchParams();
+    p.set("p", state.sel);
+    if(state.cat && state.cat !== "all"){ p.set("c", state.cat); }
+    if(state.reason){ p.set("r", state.reason); }
+    return p.toString();   // the search query is intentionally not serialized
+  }
+  function saveState(){
+    var q = serialize();
+    try{ history.replaceState(null, "", "#"+q); }catch(e){}
+    try{ localStorage.setItem("companionPlanter", q); }catch(e){}
+  }
+  function loadState(){
+    var raw = (location.hash && location.hash.length > 1) ? location.hash.slice(1) : null;
+    if(!raw){ try{ raw = localStorage.getItem("companionPlanter"); }catch(e){} }
+    if(!raw){ return; }
+    var p = new URLSearchParams(raw);
+    var pid = p.get("p");
+    state.sel = (pid && BY_ID[pid]) ? pid : DEFAULTS.sel;   // stale id → Tomato
+    var c = p.get("c");
+    state.cat = (c && VALID_CAT[c]) ? c : "all";
+    var r = p.get("r");
+    state.reason = (r && REASON_BY_KEY[r]) ? r : null;
+  }
+
+  /* ===================================================================
+     CHOOSER — category pills (Task 3.4), search (Task 3.5), list (Task 3.6)
+     =================================================================== */
+  function buildCats(){
+    var box = $("cats");
+    while(box.firstChild){ box.removeChild(box.firstChild); }
+    CATS.forEach(function(c){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "pill";
+      b.dataset.cat = c.key;
+      b.textContent = c.label;
+      b.setAttribute("aria-pressed", c.key === state.cat ? "true" : "false");
+      b.addEventListener("click", function(){ state.cat = c.key; render(); });
+      box.appendChild(b);
+    });
+  }
+  function reflectCats(){
+    var box = $("cats");
+    Array.prototype.forEach.call(box.children, function(b){
+      b.setAttribute("aria-pressed", b.dataset.cat === state.cat ? "true" : "false");
+    });
+  }
+
+  function plantOption(plant, tabbable){
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "plant-opt";
+    btn.setAttribute("role", "option");
+    btn.dataset.id = plant.id;
+    btn.tabIndex = tabbable ? 0 : -1;   // roving tabindex: a single tab stop into the listbox
+    btn.setAttribute("aria-selected", plant.id === state.sel ? "true" : "false");
+
+    var name = document.createElement("span");
+    name.className = "opt-name";
+    name.textContent = plant.name;
+    btn.appendChild(name);
+
+    var meta = document.createElement("span");
+    meta.className = "opt-meta";
+    meta.textContent = CAT_LABEL[plant.cat] || plant.cat;
+    btn.appendChild(meta);
+
+    btn.addEventListener("click", function(){
+      state.sel = plant.id;
+      render();
+      // keep focus on the chosen option in the freshly-rendered list (do not trap)
+      var again = $("plantList").querySelector('.plant-opt[data-id="' + plant.id + '"]');
+      if(again){ again.focus(); }
+    });
+    return btn;
+  }
+
+  function renderList(){
+    reflectCats();
+    var box = $("plantList");
+    while(box.firstChild){ box.removeChild(box.firstChild); }
+    var results = searchPlants(state.q, state.cat);
+    if(results.length === 0){
+      var none = document.createElement("div");
+      none.className = "plant-opt opt-empty";
+      none.setAttribute("role", "option");          // valid (disabled) child of role="listbox"
+      none.setAttribute("aria-disabled", "true");
+      none.textContent = "No matches — try another name or kind.";
+      box.appendChild(none);
+      return;
+    }
+    // roving tabindex: the selected option is the single tab stop; else the first row
+    var activeId = results[0].id;
+    for(var s=0; s<results.length; s++){ if(results[s].id === state.sel){ activeId = state.sel; break; } }
+    for(var i=0; i<results.length; i++){
+      box.appendChild(plantOption(results[i], results[i].id === activeId));
+    }
+  }
+
+  /* ===================================================================
+     CATEGORY EMBLEMS (Task 3.7) — herbarium-style line motifs per kind
+     =================================================================== */
+  function emblemLeaf(x, y, side, scale, fill){
+    var L = 20*scale, C = 8*scale;
+    return svgEl("path", {
+      d:"M0 0 Q"+(side*L*0.55)+" -"+C+" "+(side*L)+" 0 Q"+(side*L*0.55)+" "+C+" 0 0 Z",
+      fill:fill, opacity:"0.82", stroke:"var(--stem)", "stroke-width":"0.8",
+      transform:"translate("+x+","+y+") rotate("+(side>0?-18:18)+")"
+    });
+  }
+  function categoryEmblem(cat){
+    var svg = svgEl("svg", { viewBox:"0 0 120 120", "class":"emblem", role:"img", "aria-hidden":"true" });
+    function add(n){ svg.appendChild(n); }
+
+    if(cat === "veg"){
+      // a sprouting root vegetable
+      add(svgEl("path", { d:"M60 62 C49 66 47 86 60 102 C73 86 71 66 60 62 Z", fill:"var(--vigour)", opacity:"0.85", stroke:"var(--stem)", "stroke-width":"1.2" }));
+      add(svgEl("path", { d:"M60 66 V40", stroke:"var(--stem)", "stroke-width":"2", fill:"none", "stroke-linecap":"round" }));
+      add(svgEl("path", { d:"M60 44 C46 40 38 28 40 20 C53 21 60 32 60 44 Z", fill:"var(--leaf)", opacity:"0.82", stroke:"var(--stem)", "stroke-width":"1" }));
+      add(svgEl("path", { d:"M60 44 C74 40 82 28 80 20 C67 21 60 32 60 44 Z", fill:"var(--leaf-pale)", opacity:"0.82", stroke:"var(--stem)", "stroke-width":"1" }));
+    } else if(cat === "herb"){
+      // a leafy sprig
+      add(svgEl("path", { d:"M60 104 C57 80 63 58 60 30", stroke:"var(--stem)", "stroke-width":"2", fill:"none", "stroke-linecap":"round" }));
+      add(emblemLeaf(60, 90,  1, 0.7, "var(--leaf)"));
+      add(emblemLeaf(60, 78, -1, 0.8, "var(--leaf-pale)"));
+      add(emblemLeaf(60, 64,  1, 0.85, "var(--leaf)"));
+      add(emblemLeaf(60, 50, -1, 0.8, "var(--leaf-pale)"));
+      add(emblemLeaf(60, 36,  1, 0.6, "var(--leaf)"));
+    } else if(cat === "flower"){
+      // a bloom on a stem
+      add(svgEl("path", { d:"M60 104 V58", stroke:"var(--stem)", "stroke-width":"2", fill:"none", "stroke-linecap":"round" }));
+      add(emblemLeaf(60, 86, -1, 0.8, "var(--leaf)"));
+      add(emblemLeaf(60, 74,  1, 0.8, "var(--leaf-pale)"));
+      for(var f=0; f<6; f++){
+        var pa = (f/6)*360;
+        add(svgEl("ellipse", { cx:"60", cy:"31", rx:"6", ry:"12", fill:"var(--bloom)", opacity:"0.9", stroke:"var(--bloom-stroke)", "stroke-width":"0.6", transform:"rotate("+pa+" 60 44)" }));
+      }
+      add(svgEl("circle", { cx:"60", cy:"44", r:"5.4", fill:"var(--vigour)" }));
+    } else { // fruit
+      add(svgEl("circle", { cx:"60", cy:"68", r:"25", fill:"var(--bloom)", opacity:"0.85", stroke:"var(--bloom-stroke)", "stroke-width":"1.2" }));
+      add(svgEl("path", { d:"M49 58 Q56 51 65 54", stroke:"var(--paper-3)", "stroke-width":"1.6", fill:"none", opacity:"0.55", "stroke-linecap":"round" }));
+      add(svgEl("path", { d:"M60 44 C60 35 62 28 67 23", stroke:"var(--stem)", "stroke-width":"2", fill:"none", "stroke-linecap":"round" }));
+      add(emblemLeaf(64, 30, 1, 0.8, "var(--leaf)"));
+    }
+    return svg;
+  }
+
+  /* ===================================================================
+     SPECIMEN PLATE (Task 3.8)
+     =================================================================== */
+  function renderPlate(){
+    var plate = $("plate");
+    while(plate.firstChild){ plate.removeChild(plate.firstChild); }
+    var plant = BY_ID[state.sel] || BY_ID[DEFAULTS.sel];
+
+    var stage = document.createElement("div");
+    stage.className = "specimen-stage";
+    stage.appendChild(categoryEmblem(plant.cat));
+
+    var tag = document.createElement("div");
+    tag.className = "label-tag";
+
+    var nm = document.createElement("div");
+    nm.className = "pname";
+    nm.textContent = plant.name;
+    tag.appendChild(nm);
+
+    if(plant.latin){
+      var la = document.createElement("div");
+      la.className = "latin";
+      la.textContent = plant.latin;
+      tag.appendChild(la);
+    }
+    if(plant.blurb){
+      var bl = document.createElement("div");
+      bl.className = "reading";
+      bl.textContent = plant.blurb;
+      tag.appendChild(bl);
+    }
+
+    var fl = document.createElement("div");
+    fl.className = "feed-line";
+
+    var chip = document.createElement("span");
+    chip.className = "feed-chip";
+    var fk = document.createElement("span");
+    fk.className = "fk";
+    fk.textContent = "Feeds:";
+    chip.appendChild(fk);
+    chip.appendChild(document.createTextNode(" " + plant.feed));
+    fl.appendChild(chip);
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "feed-link";
+    btn.textContent = "Feed this →";
+    btn.addEventListener("click", function(){
+      // encodeURIComponent is required — preset names contain spaces and "&"
+      location.href = "fertilizer.html#f=" + encodeURIComponent(plant.feed);
+    });
+    fl.appendChild(btn);
+
+    tag.appendChild(fl);
+
+    plate.setAttribute("role", "group");
+    plate.setAttribute("aria-label", plant.name + (plant.latin ? " (" + plant.latin + ")" : ""));
+
+    plate.appendChild(stage);
+    plate.appendChild(tag);
+
+    // selection fade — only when motion is allowed and the selection actually changed
+    if(!prefersReduced && renderedSel !== null && renderedSel !== state.sel){
+      stage.classList.remove("anim-fade");
+      void stage.offsetWidth;
+      stage.classList.add("anim-fade");
+    }
+  }
+
+  /* ===================================================================
+     RANKED COMPANIONS (Task 3.9) — on the dark ink result panel
+     =================================================================== */
+  function companionRow(c){
+    var row = document.createElement("div");
+    row.className = "comp-row";
+
+    var head = document.createElement("div");
+    head.className = "comp-head";
+
+    var name = document.createElement("span");
+    name.className = "comp-name";
+    if(c.edge.conf !== "strong"){
+      name.className += " trad";
+      name.title = "Traditional — cottage-garden lore";
+      name.textContent = "~ " + c.plant.name;
+    } else {
+      name.title = "Well attested";
+      name.textContent = c.plant.name;
+    }
+    head.appendChild(name);
+
+    var cat = document.createElement("span");
+    cat.className = "comp-cat";
+    cat.textContent = CAT_LABEL[c.plant.cat] || c.plant.cat;
+    head.appendChild(cat);
+
+    row.appendChild(head);
+
+    var reasons = c.edge.reasons || [];
+    if(reasons.length){
+      var tags = document.createElement("div");
+      tags.className = "comp-tags";
+      for(var r=0; r<reasons.length; r++){
+        var rdef = REASON_BY_KEY[reasons[r]];
+        if(!rdef){ continue; }
+        var tag = document.createElement("span");
+        tag.className = "tag tag-" + rdef.accent;   // accent ∈ leaf|bloom|vigour|stem → --result-* tint
+        tag.textContent = rdef.label;
+        tags.appendChild(tag);
+      }
+      row.appendChild(tags);
+    }
+    return row;
+  }
+
+  function renderCompanions(comps){
+    var box = $("companions");
+    while(box.firstChild){ box.removeChild(box.firstChild); }
+    var plant = BY_ID[state.sel] || BY_ID[DEFAULTS.sel];
+    var shown = filterByReason(comps, state.reason);   // state.reason null in B3
+
+    var head = document.createElement("div");
+    head.className = "r-head";
+    var eyebrow = document.createElement("p");
+    eyebrow.className = "r-eyebrow";
+    eyebrow.textContent = "Good neighbours for " + plant.name;
+    head.appendChild(eyebrow);
+    var count = document.createElement("span");
+    count.className = "r-count";
+    count.textContent = shown.length + (shown.length === 1 ? " match" : " matches");
+    head.appendChild(count);
+    box.appendChild(head);
+
+    if(shown.length === 0){
+      var empty = document.createElement("p");
+      empty.className = "comp-empty";
+      empty.textContent = "No recorded companions yet.";
+      box.appendChild(empty);
+      return;
+    }
+
+    var list = document.createElement("div");
+    list.className = "comp-list";
+    for(var i=0; i<shown.length; i++){
+      list.appendChild(companionRow(shown[i]));
+    }
+    box.appendChild(list);
+  }
+
+  /* ===================================================================
+     ANTAGONISTS (Task 3.10) — amber "keep apart" panel
+     =================================================================== */
+  function renderAntagonists(ants){
+    var box = $("antagonists");
+    while(box.firstChild){ box.removeChild(box.firstChild); }
+
+    var eyebrow = document.createElement("p");
+    eyebrow.className = "antag-eyebrow";
+    eyebrow.textContent = "Keep apart";
+    box.appendChild(eyebrow);
+
+    if(ants.length === 0){
+      var empty = document.createElement("p");
+      empty.className = "antag-empty";
+      empty.textContent = "No known antagonists — a friendly plant.";
+      box.appendChild(empty);
+      return;
+    }
+
+    var list = document.createElement("div");
+    list.className = "antag-list";
+    for(var i=0; i<ants.length; i++){
+      var a = ants[i];
+      var row = document.createElement("div");
+      row.className = "antag-row";
+      var nm = document.createElement("span");
+      nm.className = "antag-name";
+      nm.textContent = a.plant.name;
+      row.appendChild(nm);
+      if(a.edge.note){
+        var note = document.createElement("span");
+        note.className = "antag-note";
+        note.textContent = a.edge.note;
+        row.appendChild(note);
+      }
+      list.appendChild(row);
+    }
+    box.appendChild(list);
+  }
+
+  /* ===================================================================
+     ACCESSIBLE ANNOUNCE (Task 3.11)
+     =================================================================== */
+  function announce(plant, nGood, nBad){
+    $("liveRegion").textContent =
+      plant.name + " — " + nGood + (nGood === 1 ? " good companion" : " good companions") +
+      ", " + nBad + " to keep apart.";
+  }
+
+  /* ===================================================================
+     SECTION 03 — REASON EXPLAINER CARDS (Task 4.7)
+     One card per REASONS entry: accent bar + AA accent-text label + a
+     plain-language line. Static content — rendered once at init.
+     =================================================================== */
+  var REASON_DESC = {
+    pest:       "Its scent or chemistry helps turn pest insects away from the crop beside it.",
+    trap:       "A sacrificial lure — pests flock to it and spare your main planting.",
+    pollinator: "Flowers that pull in bees and hoverflies to set fruit and hunt aphids.",
+    flavour:    "Long held to sweeten or sharpen the taste of its neighbour.",
+    nitrogen:   "A legume that feeds the soil with nitrogen its neighbours can draw on.",
+    mulch:      "Low, spreading growth that shades the soil, holds moisture and smothers weeds.",
+    support:    "A sturdy stem or cane for climbing neighbours to scramble up.",
+    shade:      "Tall or broad growth that shelters tender plants from harsh sun and wind."
+  };
+  function renderReasonCards(){
+    var box = $("reasonCards");
+    while(box.firstChild){ box.removeChild(box.firstChild); }
+    for(var i=0; i<REASONS.length; i++){
+      var rd = REASONS[i];
+      var card = document.createElement("div");
+      card.className = "nut";
+
+      var bar = document.createElement("span");
+      bar.className = "bar";
+      bar.setAttribute("aria-hidden", "true");
+      bar.style.background = "var(--" + rd.accent + ")";       // decorative accent bar
+      card.appendChild(bar);
+
+      var name = document.createElement("div");
+      name.className = "name";
+      name.style.color = "var(--" + rd.accent + "-text)";      // *-text variant → AA on paper (incl. --stem-text)
+      name.textContent = rd.label;
+      card.appendChild(name);
+
+      var p = document.createElement("p");
+      p.textContent = REASON_DESC[rd.key] || "";
+      card.appendChild(p);
+
+      box.appendChild(card);
+    }
+  }
+
+  /* ===================================================================
+     SHARED CHROME — theme (Task 4.4), toast + copy (Task 4.5), print (Task 4.6).
+     Mirrors fertilizer.html; theme uses the SHARED localStorage key.
+     =================================================================== */
+  function setTheme(t, persist){
+    document.documentElement.setAttribute("data-theme", t);
+    var dark = t === "dark";
+    $("themeToggle").setAttribute("aria-pressed", dark ? "true" : "false");
+    $("themeIcon").textContent = dark ? "☀" : "☾";   // ☀ / ☾
+    $("themeText").textContent = dark ? "Light" : "Dark";
+    if(persist){ try{ localStorage.setItem("fertilizerTheme", t); }catch(e){} }
+  }
+
+  var toastTimer = null;
+  function toast(msg){
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 2600);
+  }
+
+  /* ===================================================================
+     WIRING + INIT  (B3 chooser wiring + B4 load/restore, theme, actions)
+     =================================================================== */
+  buildCats();
+  $("search").addEventListener("input", function(){ state.q = this.value; render(); });
+
+  // listbox keyboard navigation — Up/Down/Home/End move focus via roving tabindex;
+  // Enter/Space select natively (each option is a <button>). Tab leaves the list (no trap).
+  $("plantList").addEventListener("keydown", function(e){
+    var key = e.key;
+    if(key !== "ArrowDown" && key !== "ArrowUp" && key !== "Home" && key !== "End"){ return; }
+    var opts = Array.prototype.slice.call(this.querySelectorAll(".plant-opt:not(.opt-empty)"));
+    if(!opts.length){ return; }
+    var cur = opts.indexOf(document.activeElement), next;
+    if(key === "Home"){ next = 0; }
+    else if(key === "End"){ next = opts.length - 1; }
+    else if(key === "ArrowDown"){ next = cur < 0 ? 0 : Math.min(cur + 1, opts.length - 1); }
+    else { next = cur < 0 ? 0 : Math.max(cur - 1, 0); }
+    e.preventDefault();
+    for(var i=0; i<opts.length; i++){ opts[i].tabIndex = -1; }
+    opts[next].tabIndex = 0;
+    opts[next].focus();
+  });
+
+  $("themeToggle").addEventListener("click", function(){
+    var cur = document.documentElement.getAttribute("data-theme");
+    setTheme(cur === "dark" ? "light" : "dark", true);
+  });
+
+  $("copyLink").addEventListener("click", function(){
+    saveState();
+    var url = location.href;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(
+        function(){ toast("Link copied — your border travels with it"); },
+        function(){ toast("Copy failed — the link is in the address bar"); }
+      );
+    } else {
+      toast("Your selection is saved in the address bar");
+    }
+  });
+
+  $("printCard").addEventListener("click", function(){ window.print(); });
+
+  // theme: shared stored pref (fertilizerTheme), else system — applied without re-persisting,
+  // so dark mode chosen in either tool carries across to the other.
+  var storedTheme = null; try{ storedTheme = localStorage.getItem("fertilizerTheme"); }catch(e){}
+  var initTheme = storedTheme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  setTheme(initTheme, false);
+
+  renderReasonCards();          // static Section 03 explainer
+  loadState();                  // restore + validate selection/category/benefit before first paint
+  render();
+})();
+</script>
+
+</body>
+</html>
