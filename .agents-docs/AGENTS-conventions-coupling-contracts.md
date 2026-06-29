@@ -5,7 +5,7 @@
 
 - **Vanilla JS, ES5-friendly**: one IIFE per file, `"use strict"`, `var` (not `let`/`const`), classic `function` declarations. No transpiler, no modules, no framework. Match the existing style rather than modernizing it.
 - **CSS**: plain CSS with custom properties and `clamp()` for fluid sizing. No preprocessor, no utility framework.
-- **Graphics**: inline SVG (category emblems, herbarium motifs, the generative plant). No image assets.
+- **Graphics**: inline SVG (category emblems, herbarium motifs, the generative plant). No image assets at all — even the eQuill Labs footer wordmark is pure text + CSS (no logo file).
 - **One self-contained file per tool** — markup, CSS, script and data all live in the same `.html`. Don't split into external `.css`/`.js`/`.json`.
 
 ## Duplicated-by-design code
@@ -14,6 +14,7 @@ There is no shared stylesheet or script. The following are **copied verbatim int
 
 - The token block: `:root { … }` **and** `html[data-theme="dark"] { … }`.
 - The shared cross-tool nav (`.sitenav`) markup **and** its CSS. Comments in the files literally say "mirrored in …".
+- The shared eQuill Labs footer colophon (`.colophon`) markup **and** its CSS — the **CSS wordmark** (`.wordmark` lockup: `eQui` in Geist + gradient `\\` slash glyph in Geist Mono + `Labs` in Instrument Serif italic, reproducing equilllabs.com's `.wordmark`), the `https://www.equilllabs.com/` brand link, and the "Source on GitHub" repo link (`https://github.com/jparkerweb/cottage-garden`). The three brand fonts (Geist, Geist Mono, Instrument Serif) are appended to the shared Google Fonts `<link>`. Comments say "mirrored verbatim in …".
 - The `setTheme()` theme logic.
 
 ➡️ When you touch any of these, update **`index.html`, `fertilizer.html`, and `companion-planter.html` together.**
