@@ -1,5 +1,7 @@
 # 🌿 The Cottage Garden Companion
 
+<img src="https://raw.githubusercontent.com/jparkerweb/cottage-garden/refs/heads/main/cottage-garden.jpg" alt="banner" style="max-height:400px">
+
 A small, growing toolbox of plain-spoken helpers for the home gardener — *feed your beds, pair your plants, and tend a cottage border with a little more confidence.*
 
 Every tool is a **self-contained, single-file HTML page** dressed as a pressed-herbarium specimen sheet: warm recycled-paper surfaces, deep botanical ink, and an old-press serif over a clean grotesque. There is **no build system, no dependencies, and no backend** — each tool is one `.html` file that opens directly from disk.
