@@ -417,8 +417,9 @@
     setTheme(cur === "dark" ? "light" : "dark", true);
   });
 
+  // theme: shared stored pref (fertilizerTheme), else light (the default)
   var storedTheme = null; try{ storedTheme = localStorage.getItem("fertilizerTheme"); }catch(e){}
-  var initTheme = storedTheme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  var initTheme = storedTheme || "light";
   setTheme(initTheme, false);
 })();
 </script>

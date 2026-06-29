@@ -1585,10 +1585,10 @@
 
   $("printCard").addEventListener("click", function(){ window.print(); });
 
-  // theme: shared stored pref (fertilizerTheme), else system — applied without re-persisting,
+  // theme: shared stored pref (fertilizerTheme), else light (the default) — applied without re-persisting,
   // so dark mode chosen in either tool carries across to the other.
   var storedTheme = null; try{ storedTheme = localStorage.getItem("fertilizerTheme"); }catch(e){}
-  var initTheme = storedTheme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  var initTheme = storedTheme || "light";
   setTheme(initTheme, false);
 
   renderReasonCards();          // static Section 03 explainer

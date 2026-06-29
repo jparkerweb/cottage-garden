@@ -1469,9 +1469,9 @@
   }
 
   /* ================= INIT ================= */
-  // theme: stored pref, else system
+  // theme: stored pref, else light (the default)
   var storedTheme=null; try{ storedTheme=localStorage.getItem("fertilizerTheme"); }catch(e){}
-  var initTheme = storedTheme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark":"light");
+  var initTheme = storedTheme || "light";
   readColors();
   setTheme(initTheme, false);
 
