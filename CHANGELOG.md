@@ -10,10 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Moved the tool sources into `src/` (`src/index.html`, `src/fertilizer.html`, `src/companion-planter.html`). The tools still open directly from disk and cross-link via relative paths.
+- Extracted The Companion Bed's plant/companion data and its specimen art into partials under `src/_includes/` (`companion-planter.data.js`, `companion-planter.art.js`), referenced from the page with `<script src="_includes/…">` so `src/` still runs directly. The build inlines these into a single self-contained `docs/` file, so the published output stays HTML-only.
 
 ### Added
 
 - A `build` skill (`.claude/skills/build/`) that mirrors `src/` → `docs/`, the GitHub Pages publish directory. It is a zero-dependency Node script (`node .claude/skills/build/scripts/build.mjs`) that cleans and regenerates `docs/` on each run, structured as a step pipeline so future transforms can be added without reworking it.
+- Per-plant specimen art in The Companion Bed: each plant now renders its own herbarium-style SVG emblem (a library of ~50 botanical form-builders mapped per plant) instead of one shared shape per category. Foliage and stems use theme tokens so the art re-themes in dark mode, while intrinsic colours (tomato red, aubergine purple, …) stay fixed.
+- Build pipeline steps `inlineIncludes` and `pruneIncludes` that fold `src/_includes/*` partials into each page and then drop the `_includes` directory from `docs/`, keeping the publish output self-contained.
 
 ## [1.0.0] — 2026-06-28
 

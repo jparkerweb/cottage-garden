@@ -1,19 +1,26 @@
 #!/usr/bin/env node
 // Build script for The Cottage Garden Companion.
 //
-// Mirrors the site source (src/) into the publish directory (docs/, which
-// GitHub Pages serves). Today that is a verbatim copy — every tool is a
-// complete, self-contained .html file, so there is nothing to compile. The
-// work is expressed as an ordered list of STEPS so a future transform
-// (minify, fingerprint assets, inline fonts, emit a sitemap, …) is just a new
-// function pushed onto the pipeline; no other part of this file changes.
+// Stages the site source (src/) into the publish directory (docs/, which
+// GitHub Pages serves) and produces self-contained .html artifacts.
+//
+// Source pages may split large blocks (plant data, per-plant SVG art, …) into
+// partials under src/_includes/, referenced with real `<script src="_includes/
+// …"></script>` tags so the page also runs straight from src/ in dev. The
+// `inlineIncludes` step replaces each such tag with the file's contents, and
+// `pruneIncludes` then removes _includes from docs/ — so the published output
+// is HTML only (plus passthrough files like CNAME), with nothing left to fetch.
+//
+// The work is an ordered list of STEPS, so a future transform (minify,
+// fingerprint assets, inline fonts, emit a sitemap, …) is just another function
+// pushed onto the pipeline.
 //
 // Zero dependencies — Node stdlib only — to honor the repo's no-build ethos.
 //
 // Usage:  node .claude/skills/build/scripts/build.mjs [--src DIR] [--out DIR]
 //                                                     [--root DIR] [--quiet]
 
-import { existsSync, rmSync, mkdirSync, cpSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, rmSync, mkdirSync, cpSync, readdirSync, statSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -70,14 +77,55 @@ function copySource({ srcDir, outDir, log }) {
   log(`copy    ${srcDir} -> ${outDir}`);
 }
 
-// --- Add future build steps below. Each is `async (ctx) => {…}` and should
-// --- read/write ctx.outDir (files are already staged there by copySource).
+// The directory (under src/, mirrored into docs/) holding inline-only partials.
+const INCLUDES_DIR = '_includes';
+
+// Inline every `<script src="_includes/…"></script>` in each staged .html with
+// the partial's contents, so the page becomes a single self-contained file.
+// Indentation of the tag is preserved on the wrapper; the original tag must sit
+// alone on its line. Fails loud on a missing partial or an unsafe payload.
+function inlineIncludes({ outDir, log }) {
+  const tag = /^([ \t]*)<script src="_includes\/([^"]+)"><\/script>[ \t]*$/gm;
+  for (const rel of listFiles(outDir)) {
+    if (!rel.endsWith('.html')) continue;
+    const file = join(outDir, rel);
+    let html = readFileSync(file, 'utf8');
+    let count = 0;
+    html = html.replace(tag, (_m, indent, name) => {
+      const partial = join(outDir, INCLUDES_DIR, name);
+      if (!existsSync(partial)) throw new Error(`include not found: ${INCLUDES_DIR}/${name} (referenced by ${rel})`);
+      const body = readFileSync(partial, 'utf8').replace(/\r?\n$/, '');
+      // A literal </script> in the payload would close the wrapper early.
+      if (/<\/script>/i.test(body)) throw new Error(`include ${name} contains </script>; cannot inline safely`);
+      count++;
+      return `${indent}<script>\n${body}\n${indent}</script>`;
+    });
+    if (count) {
+      writeFileSync(file, html);
+      log(`inline  ${rel.replace(/\\/g, '/')} (${count} include${count === 1 ? '' : 's'})`);
+    }
+  }
+}
+
+// Remove the now-inlined partials so docs/ ships HTML only (no loose .js to fetch).
+function pruneIncludes({ outDir, log }) {
+  const dir = join(outDir, INCLUDES_DIR);
+  if (existsSync(dir)) {
+    rmSync(dir, { recursive: true, force: true });
+    log(`prune   ${INCLUDES_DIR}/`);
+  }
+}
+
+// --- Add future build steps below. Each is `(ctx) => {…}` (sync or async) and
+// --- should read/write ctx.outDir (files are already staged there by copySource).
 // --- Example:
 // async function minifyHtml({ outDir, log }) { … }
 
 const STEPS = [
   cleanOutput,
   copySource,
+  inlineIncludes,
+  pruneIncludes,
   // minifyHtml,
   // generateSitemap,
 ];
