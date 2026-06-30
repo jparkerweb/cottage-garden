@@ -14,7 +14,7 @@ Every tool is a **self-contained, single-file HTML page** dressed as a pressed-h
 |---|---|---|
 | **The Cottage Garden Companion** | [`src/index.html`](src/index.html) | Landing/hub page linking the collection. |
 | **The Fertilizer Plot** | [`src/fertilizer.html`](src/fertilizer.html) | Turns any **N–P–K** ratio into a generative, hand-drawn plant, then works out feed dose, timing and cost. |
-| **The Companion Bed** | [`src/companion-planter.html`](src/companion-planter.html) | **75+ plants** with ranked companion + "keep apart" relationships, and why each pair works — deep-links a recommended feed straight into the Fertilizer Plot. |
+| **The Companion Bed** | [`src/companion-planter.html`](src/companion-planter.html) | **130+ plants** with ranked companion + "keep apart" relationships, and why each pair works — deep-links a recommended feed straight into the Fertilizer Plot. |
 
 More tools are *taking root* (a sowing calendar, a watering guide, and more to come).
 

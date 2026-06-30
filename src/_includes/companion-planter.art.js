@@ -235,6 +235,7 @@
       add(fillE(60, 74, 30, 26, f));
       if (o.ribs) { add(P("M60 50 V100 M44 54 Q40 74 46 96 M76 54 Q80 74 74 96", { stroke: STEM, "stroke-width": "1", fill: "none", opacity: "0.4" })); }
       if (o.netting) { add(P("M32 70 H88 M36 60 H84 M36 86 H84 M50 50 V98 M70 50 V98", { stroke: STEM, "stroke-width": "0.6", fill: "none", opacity: "0.4" })); }
+      if (o.stripes) { add(P("M48 50 Q40 74 50 98 M60 48 V100 M72 50 Q80 74 70 98 M38 58 Q34 74 40 92 M82 58 Q86 74 80 92", { stroke: "#2E4A2A", "stroke-width": "2", fill: "none", opacity: "0.55" })); }
     }
   };
   FORMS.corn = function (add) {
@@ -264,25 +265,30 @@
       add(P("M" + (x - 4) + " " + (top + 8) + " l4 -8 l4 8 M" + (x - 3) + " " + (top + 14) + " l3 -6 l3 6", { stroke: STEM, "stroke-width": "1", fill: "none", opacity: "0.7" }));
     }
   };
-  FORMS.potato = function (add) {
+  FORMS.potato = function (add, o) {
+    var f = (o && o.fill) || "#C7A878";
     // small leafy shoot
     add(stem("M60 60 C58 48 62 40 60 30", 1.8));
     add(blade(60, 48, 1, 0.55, LEAF)); add(blade(60, 44, -1, 0.55, LEAFP)); add(blade(60, 38, 1, 0.45, LEAF));
     // tubers
-    add(fillE(50, 78, 17, 13, "#C7A878"));
-    add(fillE(74, 84, 15, 12, "#C7A878"));
-    add(fillE(60, 96, 18, 12, "#C7A878"));
+    add(fillE(50, 78, 17, 13, f));
+    add(fillE(74, 84, 15, 12, f));
+    add(fillE(60, 96, 18, 12, f));
     var eyes = [[46, 74], [55, 82], [70, 80], [78, 88], [56, 96], [66, 98]];
     for (var i = 0; i < eyes.length; i++) { add(circ(eyes[i][0], eyes[i][1], 1.3, { fill: STEM, opacity: "0.45" })); }
   };
 
   /* ===== HERBS ===== */
-  FORMS.needleSprig = function (add) {
-    add(stem("M60 106 C58 78 62 50 60 24", 2));
+  FORMS.needleSprig = function (add, o) {
+    o = o || {};
+    var c1 = o.leaf || LEAF, c2 = o.leafAlt || LEAFP, top = o.flower ? 32 : 24;
+    add(stem("M60 106 C58 78 62 50 60 " + top, 2));
     for (var i = 0; i < 9; i++) {
       var y = 96 - i * 8, s = (i % 2 ? 1 : -1);
-      add(P("M60 " + y + " l" + (s * 12) + " -4 M60 " + (y) + " l" + (-s * 12) + " -4", { stroke: i % 2 ? LEAF : LEAFP, "stroke-width": "1.6", fill: "none", "stroke-linecap": "round" }));
+      if (y < top + 4) break;
+      add(P("M60 " + y + " l" + (s * 12) + " -4 M60 " + (y) + " l" + (-s * 12) + " -4", { stroke: i % 2 ? c1 : c2, "stroke-width": "1.6", fill: "none", "stroke-linecap": "round" }));
     }
+    if (o.flower) { for (var k = 0; k < 3; k++) { for (var j = -1; j <= 1; j++) { add(fillC(60 + j * 5, 30 - k * 6, 2.2, o.flower, { "stroke-width": "0.4", opacity: "0.95" })); } } }
   };
   FORMS.umbelHerb = function (add, o) {
     var f = o.fill || "#ECE3CC", ferny = o.ferny;
@@ -295,14 +301,15 @@
     if (ferny) { add(blade(54, 80, -1, 0.55, LEAF)); add(blade(66, 70, 1, 0.55, LEAFP)); add(blade(56, 92, -1, 0.5, LEAF)); }
     else { add(blade(52, 82, -1, 0.6, LEAF)); add(blade(68, 74, 1, 0.6, LEAFP)); }
   };
-  FORMS.lavender = function (add) {
+  FORMS.lavender = function (add, o) {
+    var col = (o && o.color) || "#8A6FB0";
     var xs = [48, 60, 72];
     for (var s = 0; s < xs.length; s++) {
       var x = xs[s], baseY = 104, topY = 36 + (s === 1 ? -6 : 4);
       add(stem("M" + x + " " + baseY + " V" + topY, 1.8));
       for (var i = 0; i < 6; i++) {
         var y = topY + i * 6;
-        add(fillE(x, y, 4.5, 6, "#8A6FB0", { "stroke-width": "0.5", opacity: "0.92" }));
+        add(fillE(x, y, 4.5, 6, col, { "stroke-width": "0.5", opacity: "0.92" }));
       }
     }
   };
@@ -427,14 +434,16 @@
     }
     add(fillC(60, 46, 7, "#3A4F86", { "stroke-width": "0.5" }));
   };
-  FORMS.dahlia = function (add) {
+  FORMS.dahlia = function (add, o) {
+    o = o || {};
+    var pf = o.fill || "#C25D7C", ps = o.stroke || "#A6395A", ctr = o.center || "#8E2C49", big = o.big ? 1.25 : 1;
     add(stem("M60 106 V58", 2));
     add(blade(50, 90, -1, 0.6, LEAF)); add(blade(70, 82, 1, 0.6, LEAFP));
     for (var ring = 0; ring < 3; ring++) {
-      var r = 20 - ring * 6, n = 12 - ring * 2;
-      for (var i = 0; i < n; i++) { var a = i / n * 6.28 + ring * 0.25; add(ell(60 + Math.cos(a) * r, 48 + Math.sin(a) * r, 4, 9 - ring * 1.5, attrs({ fill: "#C25D7C", stroke: "#A6395A", "stroke-width": "0.4", opacity: "0.9" }, { transform: "rotate(" + (a * 57.3 + 90) + " " + (60 + Math.cos(a) * r) + " " + (48 + Math.sin(a) * r) + ")" }))); }
+      var r = (20 - ring * 6) * big, n = 12 - ring * 2;
+      for (var i = 0; i < n; i++) { var a = i / n * 6.28 + ring * 0.25; add(ell(60 + Math.cos(a) * r, 48 + Math.sin(a) * r, 4 * big, (9 - ring * 1.5) * big, attrs({ fill: pf, stroke: ps, "stroke-width": "0.4", opacity: "0.9" }, { transform: "rotate(" + (a * 57.3 + 90) + " " + (60 + Math.cos(a) * r) + " " + (48 + Math.sin(a) * r) + ")" }))); }
     }
-    add(fillC(60, 48, 5, "#8E2C49"));
+    add(fillC(60, 48, 5, ctr));
   };
   FORMS.cluster = function (add, o) {
     var f = o.fill || "#7E86C6", curl = o.curl;
@@ -523,7 +532,7 @@
     var f = o.fill || "#C9483B", shape = o.shape || "round";
     add(stem("M60 34 C62 26 66 22 70 20", 2));
     add(P("M70 20 C82 16 88 24 82 34 C72 36 68 28 70 20 Z", fa(LEAFP, { opacity: "0.9" })));
-    if (shape === "round") { add(fillC(60, 66, 30, f)); add(P("M60 38 q-3 5 0 8", { stroke: STEM, "stroke-width": "1.4", fill: "none" })); }
+    if (shape === "round") { add(fillC(60, 66, 30, f)); add(P("M60 38 q-3 5 0 8", { stroke: STEM, "stroke-width": "1.4", fill: "none" })); if (o.cleft) { add(P("M60 38 Q53 56 60 95", { stroke: STEM, "stroke-width": "1", fill: "none", opacity: "0.4" })); } }
     else if (shape === "pear") { add(P("M60 38 C50 40 50 52 54 60 C44 66 40 86 60 100 C80 86 76 66 66 60 C70 52 70 40 60 38 Z", fa(f))); }
     else if (shape === "oval") { add(fillE(60, 66, 22, 30, f)); add(P("M60 40 V96", { stroke: STEM, "stroke-width": "0.8", opacity: "0.35", fill: "none" })); if (o.bloom) { add(ell(60, 66, 22, 30, { fill: "#fff", opacity: "0.07" })); } }
     add(P("M50 56 Q58 50 66 54", { stroke: "#fff", "stroke-width": "1.6", opacity: "0.35", fill: "none", "stroke-linecap": "round" }));
@@ -564,6 +573,101 @@
     add(blade(48, 84, -1, 0.6, LEAF)); add(blade(72, 76, 1, 0.6, LEAFP));
     var tips = [[44, 50], [52, 44], [60, 42], [68, 44], [76, 50], [50, 54], [70, 54], [60, 50]];
     for (var i = 0; i < tips.length; i++) { for (var d = 0; d < 4; d++) { var a = d / 4 * 6.28; add(circ(tips[i][0] + Math.cos(a) * 3.4, tips[i][1] + Math.sin(a) * 3.4, 2.4, { fill: "#2E2A38", stroke: STEM, "stroke-width": "0.3", opacity: "0.95" })); } }
+  };
+
+  /* ===== EXPANSION FORMS ===== */
+  FORMS.okra = function (add) {
+    add(stem("M60 104 V40", 2.4));
+    add(blade(50, 86, -1, 0.7, LEAF)); add(blade(70, 70, 1, 0.7, LEAFP));
+    add(P("M60 40 C50 40 50 60 54 86 C56 96 64 96 66 86 C70 60 70 40 60 40 Z", fa("#5E8E3C")));
+    add(P("M60 42 V92 M55 50 Q56 70 57 90 M65 50 Q64 70 63 90", { stroke: STEM, "stroke-width": "0.7", fill: "none", opacity: "0.5" }));
+    add(P("M60 40 l-7 -3 l-2 -7 l-1 8 l-7 1 l8 2 z M60 40 l7 -3 l2 -7 l1 8 l7 1 l-8 2 z", fa(LEAF, { opacity: "0.95", "stroke-width": "0.6" })));
+  };
+  FORMS.kohlrabi = function (add) {
+    var stalks = [[40, 30], [52, 18], [68, 18], [80, 30], [60, 14]];
+    for (var i = 0; i < stalks.length; i++) {
+      add(stem("M60 64 L" + stalks[i][0] + " " + stalks[i][1], 1.6));
+      add(fillE(stalks[i][0], stalks[i][1] - 2, 7, 11, (i % 2 ? LEAFP : LEAF), { opacity: "0.9", transform: "rotate(" + ((stalks[i][0] - 60) * 0.8) + " " + stalks[i][0] + " " + (stalks[i][1] - 2) + ")" }));
+    }
+    add(fillE(60, 76, 24, 20, "#9FC07A"));
+    add(P("M44 74 Q60 84 76 74", { stroke: STEM, "stroke-width": "0.8", fill: "none", opacity: "0.45" }));
+    add(P("M54 94 l-2 8 M60 96 v8 M66 94 l2 8", { stroke: STEM, "stroke-width": "1", fill: "none", opacity: "0.5", "stroke-linecap": "round" }));
+  };
+  FORMS.scallion = function (add) {
+    var xs = [50, 56, 60, 64, 70];
+    for (var i = 0; i < xs.length; i++) {
+      var x = xs[i], lean = (i - 2) * 3;
+      add(P("M" + x + " 96 C" + (x + lean) + " 64 " + (x + lean) + " 40 " + (x + lean) + " 26", fa("none", { stroke: i % 2 ? LEAF : LEAFP, "stroke-width": "4", "stroke-linecap": "round", opacity: "0.95" })));
+    }
+    add(P("M52 92 H68 V102 Q60 108 52 102 Z", fa("#ECE3CC")));
+    add(P("M53 100 l-2 7 M60 104 v6 M67 100 l2 7", { stroke: STEM, "stroke-width": "0.9", fill: "none", opacity: "0.5", "stroke-linecap": "round" }));
+  };
+  FORMS.artichoke = function (add) {
+    add(stem("M60 106 V64", 3));
+    add(blade(48, 92, -1, 0.7, LEAFP)); add(blade(72, 84, 1, 0.7, LEAF));
+    add(fillE(60, 46, 22, 26, "#6f8f5a"));
+    for (var r = 0; r < 4; r++) {
+      var y = 30 + r * 11, n = 3 + r;
+      for (var i = 0; i < n; i++) {
+        var x = 60 + (i - (n - 1) / 2) * 12;
+        add(P("M" + x + " " + y + " q-6 6 0 12 q6 -6 0 -12 z", fa(r % 2 ? "#7BA063" : "#688B54", { opacity: "0.95", "stroke-width": "0.6" })));
+      }
+    }
+    add(P("M60 24 q-3 -6 0 -10 q3 4 0 10", { stroke: "#8A6FB0", "stroke-width": "2", fill: "none", "stroke-linecap": "round" }));
+  };
+  FORMS.citrus = function (add, o) {
+    var f = o.fill || "#E8C53A", shape = o.shape || "round";
+    add(stem("M60 36 C62 28 66 24 70 22", 2));
+    add(P("M70 22 C82 18 88 26 82 36 C72 38 68 30 70 22 Z", fa(LEAFR, { opacity: "0.92" })));
+    if (shape === "oval") { add(fillE(60, 68, 24, 30, f)); add(circ(60, 40, 1.6, { fill: STEM, opacity: "0.5" })); add(circ(60, 96, 1.6, { fill: STEM, opacity: "0.5" })); }
+    else { add(fillC(60, 70, 28, f)); }
+    add(P("M50 60 Q58 54 66 58", { stroke: "#fff", "stroke-width": "1.6", opacity: "0.35", fill: "none", "stroke-linecap": "round" }));
+    for (var i = 0; i < 7; i++) { var a = i / 7 * 6.28; add(circ(60 + Math.cos(a) * 16, 70 + Math.sin(a) * 16, 0.9, { fill: STEM, opacity: "0.25" })); }
+  };
+  FORMS.pomegranate = function (add) {
+    add(stem("M60 40 V30", 2));
+    add(blade(60, 36, 1, 0.5, LEAFR)); add(blade(60, 36, -1, 0.5, LEAF));
+    add(fillC(60, 70, 28, "#B83A3A"));
+    add(P("M52 46 l3 -10 l3 8 l2 -10 l3 10 z", fa("#9A2E2E", { opacity: "0.95", "stroke-width": "0.6" })));
+    add(P("M50 62 Q60 56 70 62", { stroke: "#fff", "stroke-width": "1.4", opacity: "0.3", fill: "none", "stroke-linecap": "round" }));
+    add(P("M70 78 q10 4 8 14 q-8 0 -10 -8 z", fa("#E0586A", { opacity: "0.9", "stroke-width": "0.5" })));
+    for (var i = 0; i < 4; i++) { add(circ(73 + (i % 2) * 3, 84 + Math.floor(i / 2) * 4, 1.4, { fill: "#C23048" })); }
+  };
+  FORMS.rose = function (add, o) {
+    var f = (o && o.fill) || "#C25D7C", st = (o && o.stroke) || "#A6395A";
+    add(stem("M60 108 V56", 2.4));
+    add(P("M60 92 l5 3 M60 80 l-5 3 M60 68 l5 3", { stroke: STEM, "stroke-width": "1.4", fill: "none", "stroke-linecap": "round" }));
+    add(blade(50, 86, -1, 0.55, LEAF)); add(blade(70, 86, 1, 0.55, LEAFP)); add(blade(52, 72, -1, 0.5, LEAFP)); add(blade(68, 72, 1, 0.5, LEAF));
+    for (var ring = 0; ring < 3; ring++) {
+      var r = 19 - ring * 6, n = 7 - ring;
+      for (var i = 0; i < n; i++) { var a = i / n * 6.28 + ring * 0.5; add(ell(60 + Math.cos(a) * r * 0.6, 44 + Math.sin(a) * r * 0.6, r * 0.7, r * 0.5, attrs({ fill: f, stroke: st, "stroke-width": "0.5", opacity: "0.92" }, { transform: "rotate(" + (a * 57.3) + " " + (60 + Math.cos(a) * r * 0.6) + " " + (44 + Math.sin(a) * r * 0.6) + ")" }))); }
+    }
+    add(fillC(60, 44, 4, st, { "stroke-width": "0" }));
+  };
+  FORMS.pansy = function (add) {
+    add(stem("M60 106 V58", 1.8));
+    add(blade(50, 90, -1, 0.5, LEAF)); add(blade(70, 82, 1, 0.5, LEAFP));
+    add(ell(52, 40, 10, 11, fa("#7E5B9A", { "stroke-width": "0.5", opacity: "0.93" })));
+    add(ell(68, 40, 10, 11, fa("#7E5B9A", { "stroke-width": "0.5", opacity: "0.93" })));
+    add(ell(48, 52, 11, 10, fa("#9A6FB0", { "stroke-width": "0.5", opacity: "0.93" })));
+    add(ell(72, 52, 11, 10, fa("#9A6FB0", { "stroke-width": "0.5", opacity: "0.93" })));
+    add(ell(60, 56, 12, 12, fa("#E6C04C", { "stroke-width": "0.5", opacity: "0.95" })));
+    add(P("M60 50 l-6 8 M60 50 l6 8 M60 50 v10", { stroke: "#5A3A6A", "stroke-width": "1", fill: "none", opacity: "0.7" }));
+    add(fillC(60, 50, 3, "#4E3420", { "stroke-width": "0" }));
+  };
+  FORMS.grassClump = function (add) {
+    for (var i = 0; i < 9; i++) {
+      var x0 = 60 + (i - 4) * 2, bend = (i - 4) * 7;
+      add(P("M" + x0 + " 106 C" + (x0 + bend * 0.4) + " 70 " + (x0 + bend) + " 40 " + (x0 + bend * 1.4) + " 20", fa("none", { stroke: i % 2 ? LEAF : LEAFP, "stroke-width": "2.4", "stroke-linecap": "round", opacity: "0.9" })));
+    }
+    add(fillE(60, 102, 10, 6, "#C9B98F", { opacity: "0.9" }));
+  };
+  FORMS.ginger = function (add) {
+    add(P("M58 60 C48 44 44 30 46 18", fa("none", { stroke: LEAF, "stroke-width": "4", "stroke-linecap": "round" })));
+    add(P("M60 60 V16", fa("none", { stroke: LEAFP, "stroke-width": "4", "stroke-linecap": "round" })));
+    add(P("M62 60 C72 44 76 30 74 18", fa("none", { stroke: LEAF, "stroke-width": "4", "stroke-linecap": "round" })));
+    add(P("M40 78 C40 68 52 66 58 70 C64 66 78 66 82 74 C90 78 88 92 78 92 C74 98 64 96 62 90 C56 96 44 96 42 88 C36 88 36 80 40 78 Z", fa("#D9B07A")));
+    add(P("M58 72 V90 M70 72 Q72 82 70 90 M48 78 Q50 84 48 90", { stroke: STEM, "stroke-width": "0.7", fill: "none", opacity: "0.5" }));
   };
 
   /* ============================================================================
@@ -631,7 +735,61 @@
     redcurrant: ["berryCluster", { fill: "#C9483B" }],
     rhubarb: ["rhubarb"], fig: ["fig"],
     melon: ["cucurbitFruit", { fill: "#A9BE73", shape: "round", netting: true }],
-    quince: ["treeFruit", { fill: "#DDBE4A", shape: "pear" }], elderberry: ["elderberry"]
+    quince: ["treeFruit", { fill: "#DDBE4A", shape: "pear" }], elderberry: ["elderberry"],
+
+    /* ---- EXPANSION ---- */
+    /* veg */
+    "sweet-potato": ["potato", { fill: "#C8804A" }],
+    "broad-bean": ["bean", { pod: "#7DA64F", flower: "#EDE7D6" }],
+    okra: ["okra"], kohlrabi: ["kohlrabi"],
+    "pak-choi": ["chard", { rib: "#ECE3CC" }],
+    swede: ["roundRoot", { fill: "#E0C98A", shoulder: "#7C4A86" }],
+    shallot: ["allium", { fill: "#C98A5A", lines: "#9A6233", roots: true }],
+    "spring-onion": ["scallion"],
+    rocket: ["leafRosette", { fill: LEAF, fillAlt: LEAFR }],
+    endive: ["leafRosette", { fill: LEAFP, fillAlt: LEAF }],
+    "globe-artichoke": ["artichoke"],
+    "jerusalem-artichoke": ["daisy", { petal: "#E6B12E", center: "#7A5A2A", n: 13, pry: 12 }],
+    horseradish: ["taproot", { fill: "#ECE3CC" }],
+    celeriac: ["roundRoot", { fill: "#D9D2BC", shoulder: "#C2B89A" }],
+    "mustard-greens": ["kale"],
+    /* herbs */
+    "bay-laurel": ["leafySprig", { leaf: LEAFR, leafAlt: "#3f6f3b", opposite: true, leafScale: 1.12, count: 4 }],
+    chervil: ["umbelHerb", { ferny: true }],
+    sorrel: ["leafRosette", { fill: LEAF, fillAlt: LEAFR }],
+    lovage: ["umbelHerb", { fill: "#E6C04C", ferny: true }],
+    hyssop: ["lavender", { color: "#5A7FC0" }],
+    comfrey: ["spike", { fill: "#9A8FD0", style: "bell", n: 5 }],
+    feverfew: ["chamomile"],
+    lemongrass: ["grassClump"], ginger: ["ginger"],
+    "winter-savory": ["needleSprig"],
+    "anise-hyssop": ["spike", { fill: "#9A7FC0", style: "round", n: 6 }],
+    "curry-plant": ["needleSprig", { leaf: "#A8B79E", leafAlt: "#9DAE97", flower: "#E6C04C" }],
+    /* flowers */
+    rose: ["rose", { fill: "#C25D7C", stroke: "#A6395A" }],
+    peony: ["dahlia", { fill: "#E6A6C0", stroke: "#C27B9B", center: "#C27B9B", big: true }],
+    delphinium: ["spike", { fill: "#5A7FC0", style: "round", n: 7 }],
+    "sweet-william": ["cluster", { fill: "#D2697F" }],
+    pansy: ["pansy"],
+    nigella: ["daisy", { petal: "#8FA0D0", center: "#C7D0A0", n: 9, pry: 10 }],
+    larkspur: ["spike", { fill: "#7E86C6", style: "bell", n: 6 }],
+    rudbeckia: ["daisy", { petal: "#E6B12E", center: "#4E3420", n: 14, pry: 12 }],
+    coreopsis: ["daisy", { petal: "#E6C04C", center: "#C28B36", n: 8 }],
+    gaillardia: ["daisy", { petal: "#D2553E", center: "#8A5A2A", n: 13, pry: 11 }],
+    salvia: ["spike", { fill: "#7E5B9A", style: "round", n: 7 }],
+    verbena: ["cluster", { fill: "#9A6FB0" }],
+    "shasta-daisy": ["daisy", { petal: "#FBF7EC", center: "#E6C04C", n: 16, pry: 13 }],
+    /* fruit */
+    lemon: ["citrus", { fill: "#E8C53A", shape: "oval" }],
+    orange: ["citrus", { fill: "#E0892E", shape: "round" }],
+    peach: ["treeFruit", { fill: "#E59A6A", shape: "round", cleft: true }],
+    apricot: ["treeFruit", { fill: "#E0A24A", shape: "round", cleft: true }],
+    watermelon: ["cucurbitFruit", { fill: "#3F7A3A", shape: "round", stripes: true }],
+    cranberry: ["berryCluster", { fill: "#B5303A" }],
+    kiwi: ["treeFruit", { fill: "#8A6B4A", shape: "oval" }],
+    pomegranate: ["pomegranate"],
+    mulberry: ["aggregate", { fill: "#3A2540" }],
+    olive: ["berryCluster", { fill: "#5A6B3A" }]
   };
 
   /* category fallback emblems (kept for any unmapped id) */

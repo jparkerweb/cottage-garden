@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Expanded The Companion Bed from 89 to **139 plants** — 50 more popular cottage-garden vegetables, herbs, flowers and fruit (e.g. broad bean, kohlrabi, globe artichoke, rose, peony, pansy, rudbeckia, lemon, peach, watermelon, pomegranate). Each comes with its own specimen art and ranked companion / keep-apart relationships (323 edges total).
 - A `build` skill (`.claude/skills/build/`) that mirrors `src/` → `docs/`, the GitHub Pages publish directory. It is a zero-dependency Node script (`node .claude/skills/build/scripts/build.mjs`) that cleans and regenerates `docs/` on each run, structured as a step pipeline so future transforms can be added without reworking it.
 - Per-plant specimen art in The Companion Bed: each plant now renders its own herbarium-style SVG emblem (a library of ~50 botanical form-builders mapped per plant) instead of one shared shape per category. Foliage and stems use theme tokens so the art re-themes in dark mode, while intrinsic colours (tomato red, aubergine purple, …) stay fixed.
 - Build pipeline steps `inlineIncludes` and `pruneIncludes` that fold `src/_includes/*` partials into each page and then drop the `_includes` directory from `docs/`, keeping the publish output self-contained.
