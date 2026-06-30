@@ -148,6 +148,15 @@
 
   /* ---------- top utility bar ---------- */
   .toolbar{display:flex;justify-content:flex-end;gap:10px;margin-bottom:6px;flex-wrap:wrap;}
+  /* segmented unit toggle (mirrored from fertilizer.html — keep in sync) */
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--paper-2);}
+  .seg button{
+    font-family:inherit;font-size:.78rem;font-weight:600;letter-spacing:.02em;
+    border:0;background:transparent;color:var(--ink-soft);cursor:pointer;
+    padding:6px 13px;transition:background .15s,color .15s;min-height:34px;
+  }
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper-3);}
+  .seg button:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
   .icon-btn{
     font-family:inherit;font-size:.8rem;font-weight:600;color:var(--ink-soft);
     background:var(--paper-2);border:1px solid var(--line);border-radius:999px;
@@ -414,6 +423,30 @@
   .feed-link:active{transform:translateY(1px);}
   .feed-link:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
 
+  /* growing notes on the specimen plate — stat grid + fun fact */
+  .grow-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));
+    gap:7px;margin:14px 0 0;
+  }
+  .grow-stat{
+    background:var(--paper-2);border:1px solid var(--line);border-radius:7px;
+    padding:7px 8px;text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+  }
+  .grow-stat .gk{
+    font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--ink-soft);font-weight:700;
+  }
+  .grow-stat .gv{font-size:.82rem;color:var(--ink);font-weight:600;line-height:1.18;}
+  .grow-fact{
+    margin:13px 0 2px;padding-top:11px;border-top:1px dashed var(--line);
+    font-size:.84rem;color:var(--ink-soft);line-height:1.45;text-align:center;
+  }
+  .grow-fact .gf-label{
+    display:block;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;
+    font-weight:700;color:var(--bloom-text);margin-bottom:3px;
+  }
+
   /* selectable plant list rows */
   .plant-opt .opt-name{font-weight:600;}
   .plant-opt .opt-meta{
@@ -492,6 +525,12 @@
     .result .tag-bloom{color:#A6395A !important;}
     .result .tag-vigour{color:#8A5E14 !important;}
     .result .tag-stem{color:#36533A !important;}
+    /* grow chips carry theme tokens — force dark-on-white so the printed card stays legible (fixes dark-mode printing) */
+    .grow-stat{background:#fff !important;border-color:#BBB !important;}
+    .grow-stat .gk{color:#555 !important;}
+    .grow-stat .gv{color:#1A1A1A !important;}
+    .grow-fact{color:#333 !important;border-top-color:#BBB !important;}
+    .grow-fact .gf-label{color:#A6395A !important;}
     section{break-inside:avoid;}
     .studio{grid-template-columns:1fr 1fr;}
   }
@@ -509,6 +548,10 @@
 
   <!-- top utility bar -->
   <div class="toolbar" role="group" aria-label="Page tools">
+    <div class="seg" role="group" aria-label="Units">
+      <button type="button" id="unitImp" aria-pressed="true">in &#183; ft</button>
+      <button type="button" id="unitMet" aria-pressed="false">cm &#183; m</button>
+    </div>
     <button class="icon-btn" id="copyLink" type="button" title="Copy a shareable link to this planting">
       <span aria-hidden="true">&#128279;</span><span>Copy link</span>
     </button>
@@ -767,7 +810,7 @@
   /* ===================================================================
      STATE + RENDER ORCHESTRATOR (Task 3.3)
      =================================================================== */
-  var DEFAULTS = { sel:"tomato", cat:"all", reason:null, q:"" };
+  var DEFAULTS = { sel:"tomato", cat:"all", reason:null, q:"", units:"imp" };
   var state = Object.assign({}, DEFAULTS);
   var renderedSel = null;   // tracks the last selection so we only announce/animate on change
 
@@ -843,6 +886,7 @@
     p.set("p", state.sel);
     if(state.cat && state.cat !== "all"){ p.set("c", state.cat); }
     if(state.reason){ p.set("r", state.reason); }
+    if(state.units !== DEFAULTS.units){ p.set("u", state.units); }
     return p.toString();   // the search query is intentionally not serialized
   }
   function saveState(){
@@ -861,6 +905,8 @@
     state.cat = (c && VALID_CAT[c]) ? c : "all";
     var r = p.get("r");
     state.reason = (r && REASON_BY_KEY[r]) ? r : null;
+    var u = p.get("u");
+    state.units = (u === "met" || u === "imp") ? u : DEFAULTS.units;
   }
 
   /* ===================================================================
@@ -947,6 +993,27 @@
     || function(){ return svgEl("svg", { viewBox:"0 0 120 120", "class":"emblem", "aria-hidden":"true" }); };
 
   /* ===================================================================
+     UNIT DISPLAY — spacing/height are authored in metric (cm/m). When the
+     toggle is set to imperial, convert each "<n>[–<n>] cm|m" run in the
+     string to inches/feet, leaving any words ("trailing", "climbing", "+")
+     untouched. Mixed-unit ranges like "45 cm–1 m" convert each side.
+     =================================================================== */
+  function isImp(){ return state.units === "imp"; }
+  function toImperial(str){
+    return str.replace(/(\d+(?:\.\d+)?)(?:\s*[–-]\s*(\d+(?:\.\d+)?))?\s*(cm|m)\b/g,
+      function(_m, a, b, unit){
+        var label = unit === "cm" ? "in" : "ft";
+        var conv = unit === "cm"
+          ? function(v){ return Math.round(v / 2.54); }      // cm → inches
+          : function(v){ return Math.round(v * 3.28084); };  // m  → feet
+        var lo = conv(parseFloat(a));
+        if(b != null){ return lo + "–" + conv(parseFloat(b)) + " " + label; }
+        return lo + " " + label;
+      });
+  }
+  function measureDisp(v){ return (v && isImp()) ? toImperial(v) : v; }
+
+  /* ===================================================================
      SPECIMEN PLATE (Task 3.8)
      =================================================================== */
   function renderPlate(){
@@ -977,6 +1044,46 @@
       bl.className = "reading";
       bl.textContent = plant.blurb;
       tag.appendChild(bl);
+    }
+
+    // growing notes — stat grid (Light/Water/Roots/Spacing/Height) + a fun fact
+    if(plant.grow){
+      var g = plant.grow;
+      var grid = document.createElement("div");
+      grid.className = "grow-grid";
+      var stats = [
+        { k:"Light",   v:g.sun     },
+        { k:"Water",   v:g.water   },
+        { k:"Roots",   v:g.depth   },
+        { k:"Spacing", v:measureDisp(g.spacing) },
+        { k:"Height",  v:measureDisp(g.height)  }
+      ];
+      for(var si=0; si<stats.length; si++){
+        if(!stats[si].v){ continue; }
+        var st = document.createElement("div");
+        st.className = "grow-stat";
+        var gk = document.createElement("span");
+        gk.className = "gk";
+        gk.textContent = stats[si].k;
+        st.appendChild(gk);
+        var gv = document.createElement("span");
+        gv.className = "gv";
+        gv.textContent = stats[si].v;
+        st.appendChild(gv);
+        grid.appendChild(st);
+      }
+      tag.appendChild(grid);
+
+      if(g.fact){
+        var fact = document.createElement("p");
+        fact.className = "grow-fact";
+        var fl0 = document.createElement("span");
+        fl0.className = "gf-label";
+        fl0.textContent = "Did you know?";
+        fact.appendChild(fl0);
+        fact.appendChild(document.createTextNode(g.fact));
+        tag.appendChild(fact);
+      }
     }
 
     var fl = document.createElement("div");
@@ -1236,6 +1343,19 @@
     opts[next].focus();
   });
 
+  // units toggle (in·ft / cm·m) — mirrors fertilizer.html
+  function reflectUnits(){
+    $("unitImp").setAttribute("aria-pressed", state.units === "imp" ? "true" : "false");
+    $("unitMet").setAttribute("aria-pressed", state.units === "met" ? "true" : "false");
+  }
+  function setUnits(u){
+    state.units = (u === "met") ? "met" : "imp";
+    reflectUnits();
+    render();
+  }
+  $("unitImp").addEventListener("click", function(){ setUnits("imp"); });
+  $("unitMet").addEventListener("click", function(){ setUnits("met"); });
+
   $("themeToggle").addEventListener("click", function(){
     var cur = document.documentElement.getAttribute("data-theme");
     setTheme(cur === "dark" ? "light" : "dark", true);
@@ -1263,7 +1383,8 @@
   setTheme(initTheme, false);
 
   renderReasonCards();          // static Section 03 explainer
-  loadState();                  // restore + validate selection/category/benefit before first paint
+  loadState();                  // restore + validate selection/category/benefit/units before first paint
+  reflectUnits();               // sync the unit toggle's pressed state to restored units
   render();
 })();
 </script>

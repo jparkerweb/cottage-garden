@@ -148,6 +148,15 @@
 
   /* ---------- top utility bar ---------- */
   .toolbar{display:flex;justify-content:flex-end;gap:10px;margin-bottom:6px;flex-wrap:wrap;}
+  /* segmented unit toggle (mirrored from fertilizer.html — keep in sync) */
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--paper-2);}
+  .seg button{
+    font-family:inherit;font-size:.78rem;font-weight:600;letter-spacing:.02em;
+    border:0;background:transparent;color:var(--ink-soft);cursor:pointer;
+    padding:6px 13px;transition:background .15s,color .15s;min-height:34px;
+  }
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper-3);}
+  .seg button:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
   .icon-btn{
     font-family:inherit;font-size:.8rem;font-weight:600;color:var(--ink-soft);
     background:var(--paper-2);border:1px solid var(--line);border-radius:999px;
@@ -414,6 +423,30 @@
   .feed-link:active{transform:translateY(1px);}
   .feed-link:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
 
+  /* growing notes on the specimen plate — stat grid + fun fact */
+  .grow-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));
+    gap:7px;margin:14px 0 0;
+  }
+  .grow-stat{
+    background:var(--paper-2);border:1px solid var(--line);border-radius:7px;
+    padding:7px 8px;text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+  }
+  .grow-stat .gk{
+    font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--ink-soft);font-weight:700;
+  }
+  .grow-stat .gv{font-size:.82rem;color:var(--ink);font-weight:600;line-height:1.18;}
+  .grow-fact{
+    margin:13px 0 2px;padding-top:11px;border-top:1px dashed var(--line);
+    font-size:.84rem;color:var(--ink-soft);line-height:1.45;text-align:center;
+  }
+  .grow-fact .gf-label{
+    display:block;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;
+    font-weight:700;color:var(--bloom-text);margin-bottom:3px;
+  }
+
   /* selectable plant list rows */
   .plant-opt .opt-name{font-weight:600;}
   .plant-opt .opt-meta{
@@ -492,6 +525,12 @@
     .result .tag-bloom{color:#A6395A !important;}
     .result .tag-vigour{color:#8A5E14 !important;}
     .result .tag-stem{color:#36533A !important;}
+    /* grow chips carry theme tokens — force dark-on-white so the printed card stays legible (fixes dark-mode printing) */
+    .grow-stat{background:#fff !important;border-color:#BBB !important;}
+    .grow-stat .gk{color:#555 !important;}
+    .grow-stat .gv{color:#1A1A1A !important;}
+    .grow-fact{color:#333 !important;border-top-color:#BBB !important;}
+    .grow-fact .gf-label{color:#A6395A !important;}
     section{break-inside:avoid;}
     .studio{grid-template-columns:1fr 1fr;}
   }
@@ -509,6 +548,10 @@
 
   <!-- top utility bar -->
   <div class="toolbar" role="group" aria-label="Page tools">
+    <div class="seg" role="group" aria-label="Units">
+      <button type="button" id="unitImp" aria-pressed="true">in &#183; ft</button>
+      <button type="button" id="unitMet" aria-pressed="false">cm &#183; m</button>
+    </div>
     <button class="icon-btn" id="copyLink" type="button" title="Copy a shareable link to this planting">
       <span aria-hidden="true">&#128279;</span><span>Copy link</span>
     </button>
@@ -828,6 +871,166 @@
     { id:"olive",              name:"Olive",               latin:"Olea europaea",                   cat:"fruit", blurb:"Silver-leaved evergreen of hot corners — rosemary and lavender at its feet.", feed:"All-purpose balanced" }
   ];
   /* PLANTS total: 139 (veg 44 + herb 31 + flower 37 + fruit 27) */
+
+  /* ==========================================================================
+     GROW — per-plant growing notes shown on the specimen plate. Keyed by id.
+     Fields: sun (light), water, depth (root depth), spacing, height, fact (a
+     fun fact). Units are metric (British cottage-garden convention). Treat
+     spacing/height as typical guides — they vary by cultivar, soil and season.
+     ========================================================================== */
+  var GROW = {
+    /* ---- VEGETABLES ---- */
+    tomato:{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"45–60 cm", height:"1–2 m", fact:"Botanically a berry — yet the US Supreme Court legally ruled the tomato a vegetable back in 1893." },
+    potato:{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"30–40 cm", height:"60–90 cm", fact:"Every potato is a swollen underground stem, not a root — and the green parts are mildly poisonous." },
+    carrot:{ sun:"Full sun to part shade", water:"Moderate", depth:"Deep", spacing:"5–8 cm", height:"30 cm", fact:"Carrots were purple and yellow long before Dutch growers bred the familiar orange in the 17th century." },
+    onion:{ sun:"Full sun", water:"Low–moderate", depth:"Shallow", spacing:"10–15 cm", height:"30 cm", fact:"Onions make you cry by releasing a sulphur gas that turns to a mild acid in your eyes." },
+    garlic:{ sun:"Full sun", water:"Low", depth:"Shallow", spacing:"10–15 cm", height:"30–60 cm", fact:"Plant a single clove and it multiplies into a whole new bulb by midsummer." },
+    lettuce:{ sun:"Full sun to part shade", water:"Moderate–high", depth:"Shallow", spacing:"20–30 cm", height:"15–30 cm", fact:"Lettuce is in the daisy family — bolted plants ooze a bitter white latex that gives it the name Lactuca, 'milk'." },
+    cabbage:{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"45–60 cm", height:"30–45 cm", fact:"Cabbage, broccoli, kale, cauliflower and Brussels sprouts are all one species, bred into wildly different shapes." },
+    broccoli:{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"45–60 cm", height:"60–90 cm", fact:"The head you eat is a cluster of hundreds of tiny unopened flower buds." },
+    cucumber:{ sun:"Full sun", water:"High", depth:"Medium", spacing:"30–45 cm", height:"1.5–2 m climbing", fact:"Cucumbers are about 96% water — among the most watery of all foods." },
+    courgette:{ sun:"Full sun", water:"High", depth:"Medium", spacing:"60–90 cm", height:"60–90 cm", fact:"Leave a courgette unpicked for a week and it swells into a marrow." },
+    pea:{ sun:"Full sun to part shade", water:"Moderate", depth:"Shallow", spacing:"5–8 cm", height:"60 cm–1.5 m", fact:"Gregor Mendel founded modern genetics by breeding garden peas in a monastery garden." },
+    "french-bean":{ sun:"Full sun", water:"Moderate", depth:"Shallow", spacing:"10–15 cm", height:"30–45 cm", fact:"Bean roots host bacteria that pull nitrogen from the air and feed it into the soil." },
+    "runner-bean":{ sun:"Full sun", water:"Moderate", depth:"Shallow", spacing:"15–20 cm", height:"2–3 m", fact:"Runner beans were first grown in Britain as ornamental flowers, not as food." },
+    beetroot:{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"10 cm", height:"30 cm", fact:"Each knobbly beetroot 'seed' is really a cluster of several seeds, so they sprout in little tufts." },
+    radish:{ sun:"Full sun to part shade", water:"Moderate", depth:"Shallow", spacing:"2–5 cm", height:"15 cm", fact:"Some radishes are ready to pull just three to four weeks after sowing." },
+    spinach:{ sun:"Full sun to part shade", water:"Moderate", depth:"Shallow", spacing:"15–20 cm", height:"15–30 cm", fact:"Spinach's famous iron content was exaggerated for decades — partly thanks to Popeye." },
+    kale:{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"45 cm", height:"30–90 cm", fact:"A touch of frost turns kale sweeter as it converts its starches to sugars." },
+    sweetcorn:{ sun:"Full sun", water:"Moderate–high", depth:"Medium", spacing:"30–45 cm", height:"1.5–2.5 m", fact:"Corn is wind-pollinated, so it's grown in blocks not rows — each silk thread leads to one kernel." },
+    pepper:{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"40–50 cm", height:"45–75 cm", fact:"Sweet peppers and fiery chillies are the same species; the heat comes from a compound called capsaicin." },
+    squash:{ sun:"Full sun", water:"Moderate–high", depth:"Medium", spacing:"90 cm–1.2 m", height:"trailing 1–3 m", fact:"Squash flowers are edible — and the male blooms vastly outnumber the fruit-bearing females." },
+    leek:{ sun:"Full sun to part shade", water:"Moderate", depth:"Shallow", spacing:"15 cm", height:"30–45 cm", fact:"The leek is the national emblem of Wales, worn on St David's Day." },
+    cauliflower:{ sun:"Full sun", water:"Moderate–high", depth:"Medium", spacing:"60 cm", height:"45–60 cm", fact:"Gardeners fold the leaves over the head ('blanching') to keep the curd creamy white." },
+    "brussels-sprout":{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"60–75 cm", height:"60–90 cm", fact:"Sprouts grow as buds spiralling up a single tall stem — and frost makes them taste milder." },
+    celery:{ sun:"Full sun to part shade", water:"High", depth:"Shallow", spacing:"20–30 cm", height:"30–60 cm", fact:"Celery is so fibrous and watery that chewing it burns a fair share of its own calories." },
+    aubergine:{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"45–60 cm", height:"60–90 cm", fact:"A relative of the tomato and potato, the aubergine is botanically a berry." },
+    turnip:{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"10–15 cm", height:"30 cm", fact:"Before pumpkins, people in Britain and Ireland carved their lanterns from turnips." },
+    parsnip:{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"10–15 cm", height:"30 cm", fact:"Parsnip seed loses its viability fast — sow fresh each year for reliable rows." },
+    chard:{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"30 cm", height:"30–60 cm", fact:"Chard and beetroot are the same species, bred for their leaves instead of their roots." },
+    asparagus:{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"30–45 cm", height:"1–1.5 m", fact:"An asparagus bed can crop for 20 years — but you wait two years before the first harvest." },
+    "sweet-potato":{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"30–45 cm", height:"trailing 1–3 m", fact:"Despite the name it's no relation to the potato — it's a morning-glory grown for its roots." },
+    "broad-bean":{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"20 cm", height:"90 cm–1.5 m", fact:"One of the oldest cultivated crops — eaten across Europe since the Bronze Age." },
+    okra:{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"30–45 cm", height:"1–2 m", fact:"Okra is in the hibiscus family, as its pretty pale flowers reveal." },
+    kohlrabi:{ sun:"Full sun", water:"Moderate", depth:"Shallow", spacing:"20–30 cm", height:"30 cm", fact:"The swollen 'bulb' you eat is a fat stem sitting above the soil — its name means 'cabbage-turnip'." },
+    "pak-choi":{ sun:"Full sun to part shade", water:"Moderate", depth:"Shallow", spacing:"15–20 cm", height:"20–30 cm", fact:"A fast oriental brassica that can go from sowing to plate in about a month." },
+    swede:{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"20–25 cm", height:"30 cm", fact:"The swede is a chance cross between a turnip and a cabbage." },
+    shallot:{ sun:"Full sun", water:"Low–moderate", depth:"Shallow", spacing:"15–20 cm", height:"20–30 cm", fact:"Plant one shallot bulb and it splits into a whole clustered handful." },
+    "spring-onion":{ sun:"Full sun", water:"Moderate", depth:"Shallow", spacing:"2–5 cm", height:"20–30 cm", fact:"Quick and forgiving — sow a short row every few weeks for a steady supply." },
+    rocket:{ sun:"Full sun to part shade", water:"Moderate", depth:"Shallow", spacing:"10–15 cm", height:"20–30 cm", fact:"The peppery bite sharpens in hot, dry spells and as the plant runs to flower." },
+    endive:{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"30 cm", height:"20–30 cm", fact:"Tie up or cover the heart to blanch it — that tames endive's bitterness." },
+    "globe-artichoke":{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"75 cm–1 m", height:"1.2–1.5 m", fact:"The 'vegetable' is an unopened flower bud; let one open and it becomes a huge purple thistle." },
+    "jerusalem-artichoke":{ sun:"Full sun", water:"Low–moderate", depth:"Medium", spacing:"30–45 cm", height:"2–3 m", fact:"Neither from Jerusalem nor an artichoke — it's a sunflower grown for its knobbly tubers." },
+    horseradish:{ sun:"Full sun to part shade", water:"Low–moderate", depth:"Deep", spacing:"45–60 cm", height:"60 cm–1 m", fact:"The root has little smell until you cut it — that's when the fiery mustard heat is released." },
+    celeriac:{ sun:"Full sun to part shade", water:"High", depth:"Medium", spacing:"30 cm", height:"30–45 cm", fact:"Grown for its knobbly swollen base rather than the leaf-stalks of its cousin, celery." },
+    "mustard-greens":{ sun:"Full sun to part shade", water:"Moderate", depth:"Shallow", spacing:"15–30 cm", height:"30–60 cm", fact:"Dig the plants in green and they act as a 'biofumigant', cleansing the soil of some pests." },
+
+    /* ---- HERBS ---- */
+    basil:{ sun:"Full sun", water:"Moderate", depth:"Shallow", spacing:"20–30 cm", height:"30–60 cm", fact:"Pinch out the flower tips and basil keeps making leaves; let it bloom and it slows right down." },
+    parsley:{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"15–20 cm", height:"30 cm", fact:"Parsley is biennial — it makes leaves the first year, then flowers and dies the second." },
+    dill:{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"20–30 cm", height:"60–90 cm", fact:"Dill seed and dill leaf ('dill weed') come from the very same plant." },
+    coriander:{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"15–20 cm", height:"30–50 cm", fact:"Some people carry a gene that makes coriander leaves taste of soap." },
+    mint:{ sun:"Part shade to full sun", water:"Moderate–high", depth:"Shallow", spacing:"30–45 cm", height:"30–60 cm", fact:"Mint spreads by underground runners so fast that gardeners sink it in pots to contain it." },
+    oregano:{ sun:"Full sun", water:"Low", depth:"Shallow", spacing:"20–30 cm", height:"20–45 cm", fact:"Oregano's flavour grows stronger as the plant flowers in the heat of summer." },
+    thyme:{ sun:"Full sun", water:"Low", depth:"Shallow", spacing:"20–30 cm", height:"10–20 cm", fact:"The Greeks burned thyme as incense — its name is linked to a word meaning 'to fumigate'." },
+    rosemary:{ sun:"Full sun", water:"Low", depth:"Medium", spacing:"60–90 cm", height:"1–1.5 m", fact:"Rosemary is an evergreen shrub that can live for decades and grow waist-high." },
+    sage:{ sun:"Full sun", water:"Low", depth:"Medium", spacing:"45–60 cm", height:"30–60 cm", fact:"Its botanical name Salvia comes from the Latin for 'to save', for its old healing reputation." },
+    chives:{ sun:"Full sun to part shade", water:"Moderate", depth:"Shallow", spacing:"15 cm", height:"20–30 cm", fact:"Both the slender leaves and the pink pom-pom flowers are edible and oniony." },
+    fennel:{ sun:"Full sun", water:"Low–moderate", depth:"Deep", spacing:"45 cm", height:"1.5–2 m", fact:"An antisocial plant — it chemically discourages most neighbours, so give it a bed of its own." },
+    borage:{ sun:"Full sun", water:"Low–moderate", depth:"Medium", spacing:"30–45 cm", height:"60–90 cm", fact:"Borage's star-shaped blue flowers taste faintly of cucumber and are lovely frozen into ice cubes." },
+    chamomile:{ sun:"Full sun to part shade", water:"Low", depth:"Shallow", spacing:"15–20 cm", height:"20–30 cm", fact:"Nicknamed 'the plant's physician' for the old belief that it revived ailing neighbours." },
+    tarragon:{ sun:"Full sun", water:"Low–moderate", depth:"Medium", spacing:"45–60 cm", height:"60–90 cm", fact:"True French tarragon rarely sets seed, so it's grown from cuttings or division." },
+    "lemon-balm":{ sun:"Full sun to part shade", water:"Moderate", depth:"Shallow", spacing:"30–45 cm", height:"30–60 cm", fact:"Crush a leaf for a burst of lemon — it's a mint relative whose name, Melissa, means 'bee'." },
+    lavender:{ sun:"Full sun", water:"Low", depth:"Medium", spacing:"45–90 cm", height:"45–75 cm", fact:"Lavender thrives on neglect — poor, dry soil gives the strongest scent." },
+    "summer-savory":{ sun:"Full sun", water:"Low", depth:"Shallow", spacing:"20–25 cm", height:"30–45 cm", fact:"Known as 'the bean herb' for the way it flavours legumes and is said to ease their digestion." },
+    catnip:{ sun:"Full sun to part shade", water:"Low", depth:"Medium", spacing:"30–45 cm", height:"45–90 cm", fact:"About two-thirds of cats are sent into blissful rolling by catnip's scent — it's an inherited trait." },
+    marjoram:{ sun:"Full sun", water:"Low", depth:"Shallow", spacing:"20–30 cm", height:"20–45 cm", fact:"Sweet marjoram is a milder, sweeter cousin of oregano." },
+    "bay-laurel":{ sun:"Full sun to part shade", water:"Low", depth:"Medium", spacing:"1–2 m", height:"2–8 m", fact:"Victors in ancient Greece and Rome were crowned with wreaths of bay laurel." },
+    chervil:{ sun:"Part shade", water:"Moderate", depth:"Shallow", spacing:"15–20 cm", height:"30–60 cm", fact:"A delicate anise-flavoured herb that prefers cool shade and bolts quickly in the heat." },
+    sorrel:{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"30 cm", height:"30–60 cm", fact:"Sorrel's sharp lemony tang comes from oxalic acid — the same compound found in rhubarb leaves." },
+    lovage:{ sun:"Full sun to part shade", water:"Moderate", depth:"Deep", spacing:"45–60 cm", height:"1.5–2 m", fact:"Every part tastes of celery, but the plant is far hardier and towers head-high." },
+    hyssop:{ sun:"Full sun", water:"Low", depth:"Medium", spacing:"30 cm", height:"45–60 cm", fact:"Its blue flower spikes are so rich in nectar that beekeepers prize hyssop honey." },
+    comfrey:{ sun:"Full sun to part shade", water:"Moderate", depth:"Deep", spacing:"60 cm", height:"60 cm–1.2 m", fact:"Deep roots mine minerals from below; gardeners steep the leaves into a potent (and very smelly) plant feed." },
+    feverfew:{ sun:"Full sun to part shade", water:"Low", depth:"Shallow", spacing:"30 cm", height:"45–60 cm", fact:"An old remedy for headaches and fevers — which is exactly where its name comes from." },
+    lemongrass:{ sun:"Full sun", water:"Moderate", depth:"Shallow", spacing:"30–45 cm", height:"1–1.5 m", fact:"The citronella oils that scent the stalks are also used in natural insect repellents." },
+    ginger:{ sun:"Part shade", water:"Moderate–high", depth:"Shallow", spacing:"20–30 cm", height:"60 cm–1 m", fact:"The 'root' is really a rhizome — plant a plump supermarket piece and it will sprout." },
+    "winter-savory":{ sun:"Full sun", water:"Low", depth:"Shallow", spacing:"20–30 cm", height:"20–40 cm", fact:"A hardy evergreen 'bean herb' that's peppery all year, where summer savory dies back." },
+    "anise-hyssop":{ sun:"Full sun to part shade", water:"Low–moderate", depth:"Medium", spacing:"30–45 cm", height:"60 cm–1 m", fact:"Its leaves taste of liquorice and the flower spikes hum with bees for months on end." },
+    "curry-plant":{ sun:"Full sun", water:"Low", depth:"Shallow", spacing:"30–45 cm", height:"45–60 cm", fact:"It smells strongly of curry but isn't used to make it — that spice blend comes from many other plants." },
+
+    /* ---- FLOWERS ---- */
+    "french-marigold":{ sun:"Full sun", water:"Moderate", depth:"Shallow", spacing:"15–20 cm", height:"20–30 cm", fact:"Marigold roots release a compound that drives off soil-dwelling root-knot nematodes." },
+    calendula:{ sun:"Full sun to part shade", water:"Moderate", depth:"Shallow", spacing:"20–30 cm", height:"30–60 cm", fact:"Calendula petals are edible and were once used to colour butter and cheese — hence 'pot marigold'." },
+    nasturtium:{ sun:"Full sun to part shade", water:"Low", depth:"Shallow", spacing:"20–30 cm", height:"30 cm–2 m", fact:"Every part is edible — leaves and flowers are peppery, and the seed pods pickle like capers." },
+    sunflower:{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"30–60 cm", height:"1.5–3 m", fact:"Young sunflower buds track the sun across the sky each day, a habit called heliotropism." },
+    cosmos:{ sun:"Full sun", water:"Low", depth:"Medium", spacing:"30–45 cm", height:"60 cm–1.2 m", fact:"Spanish explorers named it 'cosmos', Greek for harmony, for its neatly spaced petals." },
+    zinnia:{ sun:"Full sun", water:"Moderate", depth:"Shallow", spacing:"20–30 cm", height:"30–90 cm", fact:"Zinnias were the first flowers grown and bloomed in space, aboard the ISS in 2016." },
+    "sweet-pea":{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"15–20 cm", height:"1.5–2 m", fact:"Bred for scent above all — and, unlike the edible pea, its seeds are toxic." },
+    foxglove:{ sun:"Part shade to full sun", water:"Moderate", depth:"Medium", spacing:"30–45 cm", height:"1–2 m", fact:"Foxgloves gave us digitalis, a heart medicine — but the whole plant is poisonous." },
+    hollyhock:{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"45–60 cm", height:"1.5–2.5 m", fact:"A classic cottage-door flower, hollyhocks can tower well above head height." },
+    poppy:{ sun:"Full sun", water:"Low", depth:"Medium", spacing:"15–30 cm", height:"30–90 cm", fact:"A single field poppy can scatter tens of thousands of seeds that lie dormant for decades." },
+    cornflower:{ sun:"Full sun", water:"Low", depth:"Medium", spacing:"15–20 cm", height:"30–90 cm", fact:"Once a common weed of cornfields, the cornflower is now rare in the wild." },
+    lupin:{ sun:"Full sun to part shade", water:"Moderate", depth:"Deep", spacing:"30–45 cm", height:"60 cm–1.2 m", fact:"Like beans, lupins fix nitrogen — some kinds are grown purely to enrich the soil." },
+    dahlia:{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"30–60 cm", height:"30 cm–1.5 m", fact:"Dahlias grow from tubers and come in tens of thousands of named varieties." },
+    aster:{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"30–45 cm", height:"30 cm–1.2 m", fact:"'Aster' is Greek for star — and they flower late, feeding bees well into autumn." },
+    snapdragon:{ sun:"Full sun to part shade", water:"Moderate", depth:"Shallow", spacing:"15–25 cm", height:"20–90 cm", fact:"Squeeze the bloom's sides and the 'dragon's mouth' snaps open and shut." },
+    alyssum:{ sun:"Full sun", water:"Low", depth:"Shallow", spacing:"10–20 cm", height:"5–15 cm", fact:"A low honey-scented carpet that flowers for months and self-seeds happily." },
+    phacelia:{ sun:"Full sun", water:"Low", depth:"Medium", spacing:"20–30 cm", height:"30–90 cm", fact:"Rated among the very best bee plants in the world and often sown as a green manure." },
+    petunia:{ sun:"Full sun", water:"Moderate", depth:"Shallow", spacing:"20–30 cm", height:"15–30 cm", fact:"Petunias are nightshade-family relatives of the tomato and potato." },
+    geranium:{ sun:"Full sun to part shade", water:"Low–moderate", depth:"Shallow", spacing:"20–30 cm", height:"30–60 cm", fact:"The 'geraniums' of pots and baskets are really pelargoniums, named for their stork-beak seed pods." },
+    yarrow:{ sun:"Full sun", water:"Low", depth:"Medium", spacing:"30–45 cm", height:"45–90 cm", fact:"Its name Achillea recalls Achilles, who legend says used it to staunch his soldiers' wounds." },
+    echinacea:{ sun:"Full sun", water:"Low–moderate", depth:"Deep", spacing:"45 cm", height:"60 cm–1.2 m", fact:"Leave the spiky seed-heads standing and goldfinches will feed on them all winter." },
+    "bee-balm":{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"45 cm", height:"60 cm–1.2 m", fact:"Its leaves smell of bergamot (like Earl Grey tea), and bees, butterflies and hummingbirds adore it." },
+    cleome:{ sun:"Full sun", water:"Low–moderate", depth:"Medium", spacing:"30–45 cm", height:"1–1.5 m", fact:"The dangling seed pods and long stamens give it the nickname 'spider flower'." },
+    tithonia:{ sun:"Full sun", water:"Low", depth:"Medium", spacing:"45–60 cm", height:"1.2–1.8 m", fact:"A magnet for migrating monarch butterflies, this Mexican sunflower shrugs off heat and drought." },
+    rose:{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"45 cm–1 m", height:"60 cm–2 m+", fact:"Roses are ancient — fossils date the family back some 35 million years." },
+    peony:{ sun:"Full sun to part shade", water:"Moderate", depth:"Deep", spacing:"90 cm–1 m", height:"60 cm–1 m", fact:"Slow to settle but immensely long-lived — a peony can outlast the gardener who planted it." },
+    delphinium:{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"45–60 cm", height:"1–2 m", fact:"Among the tallest of border flowers — but every part is toxic if eaten." },
+    "sweet-william":{ sun:"Full sun to part shade", water:"Moderate", depth:"Shallow", spacing:"15–25 cm", height:"30–60 cm", fact:"A clove-scented short-lived perennial, usually grown as a biennial in cottage borders." },
+    pansy:{ sun:"Full sun to part shade", water:"Moderate", depth:"Shallow", spacing:"15–20 cm", height:"15–20 cm", fact:"Pansy flowers are edible, and their 'faces' inspired the name, from the French pensée, 'thought'." },
+    nigella:{ sun:"Full sun", water:"Low", depth:"Shallow", spacing:"15–20 cm", height:"30–50 cm", fact:"After the sky-blue flowers fade, they leave ornamental balloon-like seed pods." },
+    larkspur:{ sun:"Full sun", water:"Low–moderate", depth:"Medium", spacing:"20–30 cm", height:"60 cm–1.2 m", fact:"An annual cousin of the delphinium — and, like it, poisonous to eat." },
+    rudbeckia:{ sun:"Full sun", water:"Low–moderate", depth:"Medium", spacing:"30–45 cm", height:"45 cm–1 m", fact:"The dark central cone is what gives the black-eyed Susan its name." },
+    coreopsis:{ sun:"Full sun", water:"Low", depth:"Shallow", spacing:"30 cm", height:"30–90 cm", fact:"Its name means 'bug-like', for seeds that resemble little ticks — hence 'tickseed'." },
+    gaillardia:{ sun:"Full sun", water:"Low", depth:"Shallow", spacing:"25–30 cm", height:"30–60 cm", fact:"The banded red-and-gold blooms earned it the name 'blanket flower'." },
+    salvia:{ sun:"Full sun", water:"Low", depth:"Medium", spacing:"30–45 cm", height:"45–90 cm", fact:"An ornamental sage — its aromatic leaves carry the family's pest-repelling scent." },
+    verbena:{ sun:"Full sun", water:"Low", depth:"Deep", spacing:"30–45 cm", height:"1.2–2 m", fact:"Tall yet airy enough to plant at the front of a border and still see right through it." },
+    "shasta-daisy":{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"30–45 cm", height:"60–90 cm", fact:"Bred by plant wizard Luther Burbank, who named it for the snow of California's Mount Shasta." },
+
+    /* ---- FRUIT ---- */
+    strawberry:{ sun:"Full sun", water:"Moderate", depth:"Shallow", spacing:"30–45 cm", height:"15–30 cm", fact:"Strawberries wear their seeds on the outside — about 200 per berry — and aren't true botanical berries." },
+    raspberry:{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"45–60 cm", height:"1.5–2 m", fact:"A raspberry is a cluster of tiny fruits; pick it and it slips off its core, leaving a hollow." },
+    blackberry:{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"1–2 m", height:"1.5–3 m", fact:"Blackberries cling to their core when picked — the easiest way to tell them from raspberries." },
+    blueberry:{ sun:"Full sun to part shade", water:"Moderate", depth:"Shallow", spacing:"1–1.5 m", height:"1–2 m", fact:"Blueberries need acidic soil — grow them in ericaceous compost if yours is limey." },
+    apple:{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"3–5 m", height:"2–5 m", fact:"Apple pips don't grow true to type, so every named variety is propagated by grafting." },
+    pear:{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"3–5 m", height:"3–6 m", fact:"Pears ripen best off the tree — pick them firm and let them soften indoors." },
+    plum:{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"3–4 m", height:"3–5 m", fact:"Leave plums on the tree until fully ripe — unlike pears, they won't sweeten once picked." },
+    cherry:{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"3–5 m", height:"3–8 m", fact:"Most cherries need a partner tree to pollinate — though 'Stella' began the trend for self-fertile ones." },
+    grape:{ sun:"Full sun", water:"Low–moderate", depth:"Deep", spacing:"1.5–2 m", height:"vine 3–10 m", fact:"Grapevines can live and crop for well over a hundred years." },
+    gooseberry:{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"1.2–1.5 m", height:"90 cm–1.2 m", fact:"Victorian gardeners held competitions for the single heaviest gooseberry." },
+    blackcurrant:{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"1.5 m", height:"1.2–1.8 m", fact:"Blackcurrants pack several times more vitamin C than oranges." },
+    redcurrant:{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"1.2–1.5 m", height:"1–1.5 m", fact:"Strings of glassy red berries hang like jewels — it's a close cousin of the blackcurrant." },
+    rhubarb:{ sun:"Full sun to part shade", water:"Moderate–high", depth:"Deep", spacing:"75 cm–1 m", height:"60 cm–1 m", fact:"The stalks are food but the leaves are poisonous — they're high in oxalic acid." },
+    fig:{ sun:"Full sun", water:"Low–moderate", depth:"Deep", spacing:"2–4 m", height:"2–5 m", fact:"A fig isn't a fruit but an inside-out cluster of flowers, pollinated in the wild by tiny wasps." },
+    melon:{ sun:"Full sun", water:"High", depth:"Medium", spacing:"60–90 cm", height:"trailing 1–2 m", fact:"Melons are in the cucumber family, despite their sweet, fruity flesh." },
+    quince:{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"3–4 m", height:"3–5 m", fact:"Too hard and astringent to eat raw, quince turns fragrant, pink and sweet when cooked." },
+    elderberry:{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"2–3 m", height:"2–6 m", fact:"Cook elderberries before eating — raw berries, leaves and stems are mildly toxic." },
+    lemon:{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"1.5–2 m in a pot", height:"2–4 m", fact:"A healthy lemon tree can carry flowers, green fruit and ripe lemons all at the same time." },
+    orange:{ sun:"Full sun", water:"Moderate", depth:"Medium", spacing:"2–3 m", height:"3–5 m", fact:"The sweet orange is a hybrid — a cross of the pomelo and the mandarin." },
+    peach:{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"3–4 m", height:"3–5 m", fact:"Peaches and almonds are close kin; an almond is essentially a peach bred for its seed." },
+    apricot:{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"3–4 m", height:"3–5 m", fact:"Apricots blossom very early, so a sheltered sunny wall guards the flowers from late frost." },
+    watermelon:{ sun:"Full sun", water:"High", depth:"Medium", spacing:"90 cm–1.2 m", height:"trailing 2–3 m", fact:"About 92% water — and botanically a kind of berry called a pepo." },
+    cranberry:{ sun:"Full sun to part shade", water:"High", depth:"Shallow", spacing:"30 cm", height:"10–20 cm", fact:"Ripe cranberries are full of air pockets and bounce — growers actually test them that way." },
+    kiwi:{ sun:"Full sun to part shade", water:"Moderate", depth:"Medium", spacing:"3–4 m", height:"vine 5–9 m", fact:"Most kiwis need a male and a female vine to set fruit — and they're loaded with vitamin C." },
+    pomegranate:{ sun:"Full sun", water:"Low–moderate", depth:"Deep", spacing:"2–3 m", height:"2–5 m", fact:"A single pomegranate can hold 600 or more juicy seeds, each one called an aril." },
+    mulberry:{ sun:"Full sun", water:"Moderate", depth:"Deep", spacing:"3–5 m", height:"6–12 m", fact:"Silkworms eat only mulberry leaves — this tree built the ancient silk trade." },
+    olive:{ sun:"Full sun", water:"Low", depth:"Medium", spacing:"2–4 m", height:"3–8 m", fact:"Olive trees are astonishingly long-lived; some around the Mediterranean are over 2,000 years old." }
+  };
+
+  /* enrich each plant with its growing notes (null if an id is ever missed) */
+  for (var gi = 0; gi < PLANTS.length; gi++) {
+    PLANTS[gi].grow = GROW[PLANTS[gi].id] || null;
+  }
 
   var EDGES = [
     /* ===== GOOD COMPANIONS (rel:"good") ===== */
@@ -2148,7 +2351,7 @@
   /* ===================================================================
      STATE + RENDER ORCHESTRATOR (Task 3.3)
      =================================================================== */
-  var DEFAULTS = { sel:"tomato", cat:"all", reason:null, q:"" };
+  var DEFAULTS = { sel:"tomato", cat:"all", reason:null, q:"", units:"imp" };
   var state = Object.assign({}, DEFAULTS);
   var renderedSel = null;   // tracks the last selection so we only announce/animate on change
 
@@ -2224,6 +2427,7 @@
     p.set("p", state.sel);
     if(state.cat && state.cat !== "all"){ p.set("c", state.cat); }
     if(state.reason){ p.set("r", state.reason); }
+    if(state.units !== DEFAULTS.units){ p.set("u", state.units); }
     return p.toString();   // the search query is intentionally not serialized
   }
   function saveState(){
@@ -2242,6 +2446,8 @@
     state.cat = (c && VALID_CAT[c]) ? c : "all";
     var r = p.get("r");
     state.reason = (r && REASON_BY_KEY[r]) ? r : null;
+    var u = p.get("u");
+    state.units = (u === "met" || u === "imp") ? u : DEFAULTS.units;
   }
 
   /* ===================================================================
@@ -2328,6 +2534,27 @@
     || function(){ return svgEl("svg", { viewBox:"0 0 120 120", "class":"emblem", "aria-hidden":"true" }); };
 
   /* ===================================================================
+     UNIT DISPLAY — spacing/height are authored in metric (cm/m). When the
+     toggle is set to imperial, convert each "<n>[–<n>] cm|m" run in the
+     string to inches/feet, leaving any words ("trailing", "climbing", "+")
+     untouched. Mixed-unit ranges like "45 cm–1 m" convert each side.
+     =================================================================== */
+  function isImp(){ return state.units === "imp"; }
+  function toImperial(str){
+    return str.replace(/(\d+(?:\.\d+)?)(?:\s*[–-]\s*(\d+(?:\.\d+)?))?\s*(cm|m)\b/g,
+      function(_m, a, b, unit){
+        var label = unit === "cm" ? "in" : "ft";
+        var conv = unit === "cm"
+          ? function(v){ return Math.round(v / 2.54); }      // cm → inches
+          : function(v){ return Math.round(v * 3.28084); };  // m  → feet
+        var lo = conv(parseFloat(a));
+        if(b != null){ return lo + "–" + conv(parseFloat(b)) + " " + label; }
+        return lo + " " + label;
+      });
+  }
+  function measureDisp(v){ return (v && isImp()) ? toImperial(v) : v; }
+
+  /* ===================================================================
      SPECIMEN PLATE (Task 3.8)
      =================================================================== */
   function renderPlate(){
@@ -2358,6 +2585,46 @@
       bl.className = "reading";
       bl.textContent = plant.blurb;
       tag.appendChild(bl);
+    }
+
+    // growing notes — stat grid (Light/Water/Roots/Spacing/Height) + a fun fact
+    if(plant.grow){
+      var g = plant.grow;
+      var grid = document.createElement("div");
+      grid.className = "grow-grid";
+      var stats = [
+        { k:"Light",   v:g.sun     },
+        { k:"Water",   v:g.water   },
+        { k:"Roots",   v:g.depth   },
+        { k:"Spacing", v:measureDisp(g.spacing) },
+        { k:"Height",  v:measureDisp(g.height)  }
+      ];
+      for(var si=0; si<stats.length; si++){
+        if(!stats[si].v){ continue; }
+        var st = document.createElement("div");
+        st.className = "grow-stat";
+        var gk = document.createElement("span");
+        gk.className = "gk";
+        gk.textContent = stats[si].k;
+        st.appendChild(gk);
+        var gv = document.createElement("span");
+        gv.className = "gv";
+        gv.textContent = stats[si].v;
+        st.appendChild(gv);
+        grid.appendChild(st);
+      }
+      tag.appendChild(grid);
+
+      if(g.fact){
+        var fact = document.createElement("p");
+        fact.className = "grow-fact";
+        var fl0 = document.createElement("span");
+        fl0.className = "gf-label";
+        fl0.textContent = "Did you know?";
+        fact.appendChild(fl0);
+        fact.appendChild(document.createTextNode(g.fact));
+        tag.appendChild(fact);
+      }
     }
 
     var fl = document.createElement("div");
@@ -2617,6 +2884,19 @@
     opts[next].focus();
   });
 
+  // units toggle (in·ft / cm·m) — mirrors fertilizer.html
+  function reflectUnits(){
+    $("unitImp").setAttribute("aria-pressed", state.units === "imp" ? "true" : "false");
+    $("unitMet").setAttribute("aria-pressed", state.units === "met" ? "true" : "false");
+  }
+  function setUnits(u){
+    state.units = (u === "met") ? "met" : "imp";
+    reflectUnits();
+    render();
+  }
+  $("unitImp").addEventListener("click", function(){ setUnits("imp"); });
+  $("unitMet").addEventListener("click", function(){ setUnits("met"); });
+
   $("themeToggle").addEventListener("click", function(){
     var cur = document.documentElement.getAttribute("data-theme");
     setTheme(cur === "dark" ? "light" : "dark", true);
@@ -2644,7 +2924,8 @@
   setTheme(initTheme, false);
 
   renderReasonCards();          // static Section 03 explainer
-  loadState();                  // restore + validate selection/category/benefit before first paint
+  loadState();                  // restore + validate selection/category/benefit/units before first paint
+  reflectUnits();               // sync the unit toggle's pressed state to restored units
   render();
 })();
 </script>

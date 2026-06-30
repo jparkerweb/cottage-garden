@@ -10,6 +10,15 @@
 <meta property="og:type" content="website" />
 <meta property="og:title" content="The Cottage Garden Companion — A Backyard Garden Toolbox" />
 <meta property="og:description" content="A small, growing toolbox of plain-spoken helpers for the home gardener — feed your beds, pair your plants, and tend a cottage border." />
+<meta property="og:url" content="https://cottage-garden.jparkerweb.com/" />
+<meta property="og:image" content="https://cottage-garden.jparkerweb.com/cottage-garden.jpg" />
+<meta property="og:image:width" content="1024" />
+<meta property="og:image:height" content="576" />
+<meta property="og:image:alt" content="The Cottage Garden Companion — a painted thatched cottage among flower borders." />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="The Cottage Garden Companion — A Backyard Garden Toolbox" />
+<meta name="twitter:description" content="A small, growing toolbox of plain-spoken helpers for the home gardener — feed your beds, pair your plants, and tend a cottage border." />
+<meta name="twitter:image" content="https://cottage-garden.jparkerweb.com/cottage-garden.jpg" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='14'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -135,12 +144,42 @@
   .lede{
     font-size:clamp(1.02rem,1.6vw,1.22rem);
     color:var(--ink-soft);
-    max-width:52ch;
-    margin:0;
+    max-width:none;
+    margin:0 auto;
+    text-align:center;
   }
   .lede b{color:var(--ink);font-weight:600;}
 
-  .sprig{display:block;margin:28px 0 8px;color:var(--line);}
+  /* ---------- hero banner (painted title plate) ---------- */
+  .hero-banner{
+    position:relative;
+    max-width:min(100%,880px);
+    margin:.5em auto 1.1em;
+    padding:clamp(7px,1vw,12px);
+    background:var(--paper-3);
+    border:1px solid var(--line);
+    border-radius:3px;
+    box-shadow:0 1px 0 var(--panel-hi) inset, 0 20px 40px -28px var(--shadow);
+    transition:background .35s ease, border-color .35s ease;
+  }
+  .hero-banner img{
+    display:block;width:100%;height:auto;border-radius:2px;
+  }
+  /* tame the bright cream banner so it sits calmly in dark mode */
+  html[data-theme="dark"] .hero-banner img{
+    filter:brightness(.82) contrast(1.04) saturate(.96);
+  }
+  /* decorative mounted-plate corner brackets (mirror .tool-card) */
+  .hero-banner .corner{position:absolute;width:16px;height:16px;border:1px solid var(--line);pointer-events:none;}
+  .hero-banner .c1{top:9px;left:9px;border-right:0;border-bottom:0;}
+  .hero-banner .c2{top:9px;right:9px;border-left:0;border-bottom:0;}
+  .hero-banner .c3{bottom:9px;left:9px;border-right:0;border-top:0;}
+  .hero-banner .c4{bottom:9px;right:9px;border-left:0;border-top:0;}
+
+  /* visually-hidden (accessible heading kept though title lives in the art) */
+  .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+
+  .sprig{display:block;margin:28px auto 8px;color:var(--line);}
 
   /* ---------- Section scaffold ---------- */
   section{margin-top:clamp(40px,6vw,72px);}
@@ -287,7 +326,13 @@
   <!-- HERO -->
   <header>
     <p class="eyebrow">A Backyard Cottage-Garden Companion</p>
-    <h1 class="title">The Cottage Garden Companion</h1>
+    <h1 class="title vh">The Cottage Garden Companion</h1>
+    <div class="hero-banner">
+      <span class="corner c1"></span><span class="corner c2"></span>
+      <span class="corner c3"></span><span class="corner c4"></span>
+      <img src="cottage-garden.jpg" width="1024" height="576" loading="eager" fetchpriority="high" decoding="async"
+           alt="A painted cottage garden: a thatched stone cottage among flower borders and a winding path, beneath the title &#8220;The Cottage Garden Companion.&#8221;" />
+    </div>
     <p class="lede">A small, growing toolbox of plain-spoken helpers for the home gardener &#8212; <b>feed your beds</b>, <b>pair your plants</b>, and tend a cottage border with a little more confidence. Pick a tool and dig in.</p>
     <svg class="sprig" width="200" height="16" viewBox="0 0 200 16" fill="none" aria-hidden="true">
       <path d="M2 8 H82" stroke="currentColor"/>
