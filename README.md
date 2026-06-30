@@ -14,7 +14,7 @@ Every tool is a **self-contained, single-file HTML page** dressed as a pressed-h
 |---|---|---|
 | **The Cottage Garden Companion** | [`src/index.html`](src/index.html) | Landing/hub page linking the collection. |
 | **The Fertilizer Plot** | [`src/fertilizer.html`](src/fertilizer.html) | Turns any **N–P–K** ratio into a generative, hand-drawn plant, then works out feed dose, timing and cost. |
-| **The Companion Bed** | [`src/companion-planter.html`](src/companion-planter.html) | **130+ plants** with ranked companion + "keep apart" relationships, and why each pair works — deep-links a recommended feed straight into the Fertilizer Plot. |
+| **The Companion Bed** | [`src/companion-planter.html`](src/companion-planter.html) | **139 plants** with ranked companion + "keep apart" relationships, and why each pair works — deep-links a recommended feed straight into the Fertilizer Plot. |
 
 More tools are *taking root* (a sowing calendar, a watering guide, and more to come).
 
@@ -41,7 +41,7 @@ The **only** network request is the Google Fonts `<link>` (Fraunces + Hanken Gro
 
 ## How it's built
 
-Each tool is one `.html` file holding its markup, `<style>`, a vanilla-JS IIFE, and its own embedded dataset. Inside the IIFE, every tool follows the same data-driven shape:
+Each published tool is one `.html` file holding its markup, `<style>`, a vanilla-JS IIFE, and its data. (A larger tool may keep its data and artwork in `src/_includes/` partials while you work — the build folds them back in, so the page you ship is still a single file.) Inside the IIFE, every tool follows the same data-driven shape:
 
 > **Data → Derive (pure) → Render → State / Wiring**, with a single top-level `render()` per state change.
 
@@ -53,13 +53,13 @@ Each tool is one `.html` file holding its markup, `<style>`, a vanilla-JS IIFE, 
 
 There is no shared stylesheet or script: the design tokens, the cross-tool nav, and the theme logic are **duplicated verbatim** in each file by design. When you change shared chrome, change it in **every** file.
 
-The tool sources live in [`src/`](src). There is still no compile step — the "build" simply mirrors `src/` into [`docs/`](docs), the folder GitHub Pages publishes:
+The tool sources live in [`src/`](src). There is still no compile step — the "build" stages `src/` into [`docs/`](docs), the folder GitHub Pages publishes, inlining any `src/_includes/` partials so each published page is self-contained:
 
 ```bash
 node .claude/skills/build/scripts/build.mjs
 ```
 
-This regenerates `docs/` from scratch each time, so it never holds stale files. (The pipeline is structured so a real transform — minification, asset processing — can be slotted in later without reworking it.)
+This regenerates `docs/` from scratch each time, so it never holds stale files. (The pipeline is structured so a further transform — minification, asset processing — can be slotted in later without reworking it.)
 
 See [`AGENTS.md`](AGENTS.md) and the [`.agents-docs/`](.agents-docs) folder for the full architecture, conventions, and coupling contracts.
 

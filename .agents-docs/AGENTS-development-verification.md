@@ -3,7 +3,7 @@
 
 ## Run / preview
 
-There is **no compile step, no package manager, no task runner**. Each tool is a complete page on its own. (The `build` skill mirrors `src/` → `docs/` for GitHub Pages, but that is a verbatim copy — not a build the tools depend on; see "No tooling to set up" below.)
+There is **no compile step, no package manager, no task runner**. Each tool is a complete page on its own. (The `build` skill stages `src/` → `docs/` for GitHub Pages, inlining any `src/_includes/` partials into the page — but the tools don't depend on it to run; see "No tooling to set up" below.)
 
 Sources live in `src/`. Open and edit them there — `docs/` is generated and overwritten on each build.
 
@@ -16,7 +16,7 @@ The **only** network request is the Google Fonts `<link>` (Fraunces + Hanken Gro
 
 No `package.json`, lockfile, linter config, test framework, env vars, or backend. Don't introduce a bundler, framework, or npm dependency into the **tools** — the zero-build, opens-from-disk promise is a core project constraint (NFR): every page must still open and work directly from `src/…html` with nothing compiled. New tools should be authored the same way: one self-contained `.html` file.
 
-The `build` skill is the one sanctioned exception, and only because it doesn't touch that promise: it copies `src/` to `docs/` verbatim (zero dependencies, Node stdlib only) so GitHub Pages has something to publish. If a real transform is ever needed, add it as a step there — never as something a tool requires to run.
+The `build` skill is the one sanctioned exception, and only because it doesn't touch that promise: it stages `src/` to `docs/` and inlines `src/_includes/` partials into their pages (zero dependencies, Node stdlib only) so GitHub Pages gets self-contained HTML. The partials still load via `<script src>` in dev, so `src/` runs un-built. If a further transform is ever needed, add it as a step there — never as something a tool requires to run.
 
 ## Verification (manual smoke-check)
 

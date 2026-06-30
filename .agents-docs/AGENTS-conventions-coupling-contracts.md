@@ -6,7 +6,7 @@
 - **Vanilla JS, ES5-friendly**: one IIFE per file, `"use strict"`, `var` (not `let`/`const`), classic `function` declarations. No transpiler, no modules, no framework. Match the existing style rather than modernizing it.
 - **CSS**: plain CSS with custom properties and `clamp()` for fluid sizing. No preprocessor, no utility framework.
 - **Graphics**: inline SVG (category emblems, herbarium motifs, the generative plant). No image assets at all — even the eQuill Labs footer wordmark is pure text + CSS (no logo file).
-- **One self-contained file per tool** — markup, CSS, script and data all live in the same `.html`. Don't split into external `.css`/`.js`/`.json`.
+- **One self-contained *published* file per tool** — markup, CSS and logic live in the `.html`. The only sanctioned split is a large **data/art block** moved to a `src/_includes/` partial that the build inlines back in (see [Architecture → Partials](./AGENTS-architecture.md)); the shipped `docs/` page is still single-file. Don't split CSS or page logic out, and don't introduce `.json`/external fetches.
 
 ## Duplicated-by-design code
 
