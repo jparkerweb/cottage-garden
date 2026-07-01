@@ -512,7 +512,12 @@
 
   /* ---------- print: a clean planting card ---------- */
   @media print{
-    .toolbar,.sitenav,.chooser,.search,#cats,#reasonFilter,.jump,.sprig,.sub-h{display:none !important;}
+    /* keep only the selected plant card + the neighbours/keep-apart panels — hide the rest of the page so it prints like a card, not the whole site */
+    .toolbar,.sitenav,.chooser,.search,#cats,#reasonFilter,.jump,.sprig,.sub-h,
+    header,footer,#why,.sec-head{display:none !important;}
+    main{margin:0 !important;}
+    #choose{margin:0 !important;padding:0 !important;}
+    #neighbours{margin:14px 0 0 !important;padding:0 !important;}
     body{background:#fff !important;color:#000;background-image:none;}
     .panel,.plate,.antag{box-shadow:none;border-color:#999;}
     .result{background:#fff !important;color:#000 !important;box-shadow:none;border:1px solid #999;}
