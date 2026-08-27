@@ -1,6 +1,6 @@
 # 🌿 The Cottage Garden Companion
 
-<img src="https://raw.githubusercontent.com/jparkerweb/cottage-garden/refs/heads/main/cottage-garden.jpg" alt="banner" style="max-height:400px">
+<img src="https://raw.githubusercontent.com/jparkerweb/cottage-garden/refs/heads/main/cottage-garden.jpg" alt="banner" data="object-position:bottom;" style="max-height:400px">
 
 A small, growing toolbox of plain-spoken helpers for the home gardener — *feed your beds, pair your plants, and tend a cottage border with a little more confidence.*
 
